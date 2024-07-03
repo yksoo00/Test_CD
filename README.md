@@ -2,7 +2,7 @@
 
 ### 실행 명령어
 ```bash
-$ python -m app.main
+$ uvicorn main:app --reload
 ```
 
 ### Commit Convention
