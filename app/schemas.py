@@ -29,7 +29,7 @@ class ChatroomResponse(BaseModel):
     updated_at: datetime.datetime
 
     class Config:
-        orm_mode = True
+        from_attribute = True
 
 
 class MentorBase(BaseModel):
