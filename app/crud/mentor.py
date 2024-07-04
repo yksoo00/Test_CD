@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from models import Mentor
-from schemas import MentorCreate
+from models import *
+from schemas import *
 
 
 def create_mentor(db: Session, mentor: MentorCreate):
@@ -11,3 +11,7 @@ def create_mentor(db: Session, mentor: MentorCreate):
     db.commit()
     db.refresh(db_mentor)
     return db_mentor
+
+
+def get_mentor(db: Session, mentor_id: int):
+    return db.query(Mentor).filter(Mentor.id == mentor_id).first()
