@@ -27,7 +27,7 @@ def create_chatroom(chatroom: ChatroomCreate, db: Session = Depends(get_db)):
     return ChatroomService.create_chatroom(db=db, chatroom=chatroom)
 
 
-@router.delete("/chatrooms/{chatroom_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/chatrooms/ƒ{chatroom_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_chatroom(chatroom_id: int, db: Session = Depends(get_db)):
     success = ChatroomService.delete_chatroom(db, chatroom_id=chatroom_id)
     if not success:
