@@ -20,9 +20,11 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
+
 @router.post("/chatrooms/", response_model=ChatroomResponse)
 def create_chatroom(chatroom: ChatroomCreate, db: Session = Depends(get_db)):
     return ChatroomService.create_chatroom(db=db, chatroom=chatroom)
+
 
 @router.delete("/chatrooms/{chatroom_id}", response_model=ChatroomResponse)
 def delete_chatroom(chatroom_id: int, db: Session = Depends(get_db)):

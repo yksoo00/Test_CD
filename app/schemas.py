@@ -15,9 +15,11 @@ class UserResponse(BaseModel):
     class Config:
         from_attribute = True
 
+
 class ChatroomCreate(BaseModel):
     user_id: int
     mentor_id: int
+
 
 class ChatroomResponse(BaseModel):
     id: int
