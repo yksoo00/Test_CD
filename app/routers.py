@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from crud import user as UserService
 from crud import chatroom as ChatroomService
@@ -27,12 +27,11 @@ def create_chatroom(chatroom: ChatroomCreate, db: Session = Depends(get_db)):
     return ChatroomService.create_chatroom(db=db, chatroom=chatroom)
 
 
-@router.delete("/chatrooms/{chatroom_id}", response_model=ChatroomResponse)
+@router.delete("/chatrooms/{chatroom_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_chatroom(chatroom_id: int, db: Session = Depends(get_db)):
-    chatroom = ChatroomService.delete_chatroom(db, chatroom_id=chatroom_id)
-    if chatroom is None:
+    success = ChatroomService.delete_chatroom(db, chatroom_id=chatroom_id)
+    if not success:
         raise HTTPException(status_code=404, detail="Chatroom not found")
-    return chatroom
 
 
 @router.post("/mentors/", response_model=MentorResponse)
