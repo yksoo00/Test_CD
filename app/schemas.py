@@ -14,3 +14,17 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attribute = True
+
+class ChatroomCreate(BaseModel):
+    user_id: int
+    mentor_id: int
+
+class ChatroomResponse(BaseModel):
+    id: int
+    user_id: int
+    mentor_id: int
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+
+    class Config:
+        orm_mode = True
