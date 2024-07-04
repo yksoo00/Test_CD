@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from crud import user as UserService
 from crud import chatroom as ChatroomService
+from crud import mentor as MentorService
 from schemas import *
 from database import get_db
 
@@ -32,3 +33,8 @@ def delete_chatroom(chatroom_id: int, db: Session = Depends(get_db)):
     if chatroom is None:
         raise HTTPException(status_code=404, detail="Chatroom not found")
     return chatroom
+
+
+@router.post("/mentors/", response_model=MentorResponse)
+def create_mentor(mentor: MentorCreate, db: Session = Depends(get_db)):
+    return MentorService.create_mentor(db=db, mentor=mentor)

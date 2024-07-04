@@ -30,3 +30,19 @@ class ChatroomResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class MentorBase(BaseModel):
+    name: str
+    description: str
+    is_spicy: bool
+
+
+class MentorCreate(MentorBase):
+    pass
+
+
+class MentorResponse(MentorBase):
+    id: int
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
