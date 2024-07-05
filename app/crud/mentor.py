@@ -15,3 +15,7 @@ def create_mentor(db: Session, mentor: MentorCreate):
 
 def get_mentor(db: Session, mentor_id: int):
     return db.query(Mentor).filter(Mentor.id == mentor_id).first()
+
+
+def get_mentor_all(db: Session):
+    return db.query(Mentor).all()
