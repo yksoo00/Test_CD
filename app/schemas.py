@@ -44,5 +44,11 @@ class MentorCreate(MentorBase):
 
 class MentorResponse(MentorBase):
     id: int
+    name: str
+    is_spicy: bool
+    description: str
     created_at: datetime.datetime
     updated_at: datetime.datetime
+
+    class Config:
+        orm_mode = True
