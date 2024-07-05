@@ -35,7 +35,6 @@ class ChatroomResponse(BaseModel):
 class MentorBase(BaseModel):
     name: str
     description: str
-    is_spicy: bool
 
 
 class MentorCreate(MentorBase):
@@ -45,7 +44,6 @@ class MentorCreate(MentorBase):
 class MentorResponse(MentorBase):
     id: int
     name: str
-    is_spicy: bool
     description: str
     created_at: datetime.datetime
     updated_at: datetime.datetime
