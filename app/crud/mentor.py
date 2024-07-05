@@ -4,9 +4,7 @@ from schemas import *
 
 
 def create_mentor(db: Session, mentor: MentorCreate):
-    db_mentor = Mentor(
-        name=mentor.name, description=mentor.description, is_spicy=mentor.is_spicy
-    )
+    db_mentor = Mentor(name=mentor.name, description=mentor.description)
     db.add(db_mentor)
     db.commit()
     db.refresh(db_mentor)
