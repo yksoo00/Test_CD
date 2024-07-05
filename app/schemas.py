@@ -35,7 +35,7 @@ class ChatroomResponse(BaseModel):
 class MentorBase(BaseModel):
     name: str
     description: str
-
+    is_spicy: bool
 
 class MentorCreate(MentorBase):
     pass
@@ -43,8 +43,6 @@ class MentorCreate(MentorBase):
 
 class MentorResponse(MentorBase):
     id: int
-    name: str
-    description: str
     created_at: datetime.datetime
     updated_at: datetime.datetime
 
