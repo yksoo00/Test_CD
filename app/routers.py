@@ -46,3 +46,9 @@ def delete_chatroom(chatroom_id: int, db: Session = Depends(get_db)):
 @router.post("/mentors/", response_model=MentorResponse)
 def create_mentor(mentor: MentorCreate, db: Session = Depends(get_db)):
     return MentorService.create_mentor(db=db, mentor=mentor)
+
+
+@router.get("/mentors/", response_model=list[MentorResponse])
+def read_mentors(db: Session = Depends(get_db)):
+    mentors = MentorService.get_mentor_all(db)
+    return mentors
