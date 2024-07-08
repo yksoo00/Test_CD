@@ -37,12 +37,25 @@ class MentorBase(BaseModel):
     description: str
     is_spicy: bool
 
+
 class MentorCreate(MentorBase):
     pass
 
 
 class MentorResponse(MentorBase):
     id: int
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+
+    class Config:
+        from_attributes = True
+
+
+class PrescriptionResponse(BaseModel):
+    id: int
+    user_id: int
+    mentor_id: int
+    content: str
     created_at: datetime.datetime
     updated_at: datetime.datetime
 
