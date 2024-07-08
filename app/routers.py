@@ -10,7 +10,7 @@ from database import get_db
 router = APIRouter()
 
 
-@router.post("/users/", response_model=UserResponse)
+@router.post("/users", response_model=UserResponse)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     return UserService.create_user(db=db, user=user)
 
@@ -23,7 +23,7 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
     return user
 
 
-@router.post("/chatrooms/", response_model=ChatroomResponse)
+@router.post("/chatrooms", response_model=ChatroomResponse)
 def create_chatroom(chatroom: ChatroomCreate, db: Session = Depends(get_db)):
     user = UserService.get_user(db, user_id=chatroom.user_id)
     if user is None:
@@ -54,12 +54,12 @@ def delete_chatroom(chatroom_id: int, db: Session = Depends(get_db)):
     ChatroomService.delete_chatroom(db, chatroom_id)
 
 
-@router.post("/mentors/", response_model=MentorResponse)
+@router.post("/mentors", response_model=MentorResponse)
 def create_mentor(mentor: MentorCreate, db: Session = Depends(get_db)):
     return MentorService.create_mentor(db=db, mentor=mentor)
 
 
-@router.get("/mentors/", response_model=list[MentorResponse])
+@router.get("/mentors", response_model=list[MentorResponse])
 def read_mentors(db: Session = Depends(get_db)):
     mentors = MentorService.get_mentor_all(db)
     return mentors
