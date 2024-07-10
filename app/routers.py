@@ -108,7 +108,7 @@ def read_prescriptions(user_id: int, db: Session = Depends(get_db)):
     prescriptions = PrescriptionService.get_prescription_all(db, user_id)
     return prescriptions
 
+
 @router.get("/")
 async def get():
     return HTMLResponse(open("./templates/index.html").read())
-     
