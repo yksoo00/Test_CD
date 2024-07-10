@@ -25,6 +25,15 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
     return user
 
 
+# 사용자 닉네임을 수정하는 API
+@router.put("/users/{user_id}", response_model=UserResponse)
+def modify_user(user_id: int, user: UserModify, db: Session = Depends(get_db)):
+    user = UserService.modify_user(db, user_id, user)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
 # 새로운 채팅방을 생성하는 API
 @router.post("/chatrooms", response_model=ChatroomResponse)
 def create_chatroom(chatroom: ChatroomCreate, db: Session = Depends(get_db)):
