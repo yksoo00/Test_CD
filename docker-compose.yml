@@ -7,7 +7,10 @@ services:
       - "8000:8000"                 
     depends_on:                                                                     
       - teamj_db
-    entrypoint: ["sh", "-c", "sleep 1 && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"]                                 
+    entrypoint: ["sh", "-c", "sleep 1 && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"]
+    environment:
+      ENV: production
+                             
 
   teamj_db:
     image: mysql:latest
