@@ -1,8 +1,14 @@
 ## 말해봐요 고민의 숲
 
 ### 실행 명령어
+- 개발 환경
 ```bash
+$ cd app/
 $ uvicorn main:app --reload
+```
+- 배포 환경
+```bash
+$ docker-compose up -d
 ```
 
 ### Commit Convention
