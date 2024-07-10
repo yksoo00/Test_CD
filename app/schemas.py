@@ -2,13 +2,20 @@ from pydantic import BaseModel
 import datetime
 
 
-class UserCreate(BaseModel):
+class UserBase(BaseModel):
     nickname: str
 
 
-class UserResponse(BaseModel):
+class UserCreate(UserBase):
+    pass
+
+
+class UserModify(UserBase):
+    pass
+
+
+class UserResponse(UserBase):
     id: int
-    nickname: str
     created_at: datetime.datetime
     updated_at: datetime.datetime
 
