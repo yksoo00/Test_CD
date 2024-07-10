@@ -3,6 +3,9 @@ from database import Base, engine
 from routers import router as user_router
 from fastapi.middleware.cors import CORSMiddleware
 
+# 데이터베이스 테이블 생성을 위해 필요
+from models import *
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
