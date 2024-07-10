@@ -6,6 +6,7 @@ from crud import mentor as MentorService
 from crud import prescription as PrescriptionService
 from schemas import *
 from database import get_db
+from fastapi.responses import HTMLResponse
 
 router = APIRouter()
 
@@ -106,3 +107,8 @@ def read_prescriptions(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     prescriptions = PrescriptionService.get_prescription_all(db, user_id)
     return prescriptions
+
+
+@router.get("/")
+async def get():
+    return HTMLResponse(open("./templates/index.html").read())
