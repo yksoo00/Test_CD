@@ -24,6 +24,7 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
+
 # 사용자 닉네임을 수정하는 API
 @router.put("/users/{user_id}", response_model=UserResponse)
 def modify_user(user_id: int, user: UserModify, db: Session = Depends(get_db)):
