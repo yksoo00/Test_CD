@@ -139,9 +139,9 @@ async def websocket_endpoint(
         {
             "event": "connect",
             "message": "connected",
-            "user_id": {user_id},
-            "chatroom_id": {chatroom_id},
-            "mentor_id": {chatroom.mentor_id},
+            "user_id": user_id,
+            "chatroom_id": chatroom_id,
+            "mentor_id": chatroom.mentor_id,
         }
     )
 
