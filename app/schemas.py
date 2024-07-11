@@ -42,7 +42,6 @@ class ChatroomResponse(BaseModel):
 class MentorBase(BaseModel):
     name: str
     description: str
-    is_spicy: bool
 
 
 class MentorCreate(MentorBase):
