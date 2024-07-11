@@ -5,3 +5,4 @@ pydantic
 pymysql
 cryptography
 pytz
+celery
