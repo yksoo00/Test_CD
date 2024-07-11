@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Chat</title>
+</head>
+
+<body>
+    <h1>WebSocket Chat</h1>
+    <form action="" onsubmit="sendMessage(event)">
+        <input type="text" id="messageText" autocomplete="off" />
+        <button>Send</button>
+    </form>
+    <ul id='messages'>
+    </ul>
+    <script>
+        var ws = new WebSocket("ws://localhost:8000/api/ws/chatrooms/1?user_id=1");
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            const eventType = data.event;
+            console.log(eventType);
+            if (eventType == "disconnect"){
+                var messages = document.getElementById('messages');
+                var messageLi = document.createElement('li');
+                messageLi.appendChild(document.createTextNode(data.message));
+                messages.appendChild(messageLi);
+            }
+            if (eventType === 'connect') {
+                console.log(data)
+                var messages = document.getElementById('messages');
+                var messageLi = document.createElement('li');
+                var userLi = document.createElement('li');
+                var chatroomLi = document.createElement('li');
+                var mentorLi = document.createElement('li');
+                messageLi.appendChild(document.createTextNode(data.message));
+                messages.appendChild(messageLi);
+                userLi.appendChild(document.createTextNode("user_id : " + data.user_id));
+                messages.appendChild(userLi);
+                chatroomLi.appendChild(document.createTextNode("chatroom_id : " + data.chatroom_id));
+                messages.appendChild(chatroomLi);
+                mentorLi.appendChild(document.createTextNode("mentor_id : " + data.mentor_id));
+                messages.appendChild(mentorLi);
+            }
+            else if (eventType === 'server_message') {
+                console.log(data.message)
+                // 메시지 출력
+                var messages = document.getElementById('messages');
+                var messageLi = document.createElement('li');
+                messageLi.appendChild(document.createTextNode('Server:' + data.message));
+                messages.appendChild(messageLi);
+                // 오디오 재생
+                // const audioBase64 = data.audio;
+                // const audioBuffer = Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0));
+                // const blob = new Blob([audioBuffer], { type: 'audio/mp3' });
+                // const url = URL.createObjectURL(blob);
+                // const audio = new Audio(url);
+                // audio.play();
+            }
+        };
+
+        const sendMessage = (event) => {
+            var input = document.getElementById("messageText");
+            var messages = document.getElementById('messages');
+            var message = document.createElement('li');
+            var content = document.createTextNode('Client: ' + input.value);
+            message.appendChild(content);
+            messages.appendChild(message);
+            ws.send(input.value);
+            input.value = '';
+            event.preventDefault();
+        }
+    </script>
+</body>
+
+</html>
