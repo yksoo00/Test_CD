@@ -7,14 +7,18 @@ services:
       - '8000:8000'
     depends_on:
       - teamj_db
+      - rabbitmq
+      - celery_worker
     volumes:
       - './app:/app'
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - DATABASE_URL=${DATABASE_URL}
     entrypoint:
       - sh
       - '-c'
       - 'sleep 10 && uvicorn main:app --host 0.0.0.0 --port 8000 --reload'
+
   teamj_db:
     image: 'mysql:latest'
     environment:
@@ -24,3 +28,22 @@ services:
       - '3306:3306'
     volumes:
       - './db_data:/var/lib/mysql'
+
+  rabbitmq:
+    image: rabbitmq:3
+    expose:
+      - "5672"
+      - "15672"
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    command: celery -A utils.celery_worker worker --loglevel=info
+    working_dir: /app
+    volumes:
+      - ./app/utils:/app/utils
+    environment:
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+    depends_on:
+      - rabbitmq
