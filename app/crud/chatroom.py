@@ -13,8 +13,8 @@ def create_chatroom(db: Session, chatroom: ChatroomCreate):
 
 def get_chatroom(db: Session, chatroom_id: int):
     db_chatroom = db.query(Chatroom).filter(Chatroom.id == chatroom_id).first()
-    if db_chatroom.is_deleted:
-        return
+    if db_chatroom is None or db_chatroom.is_deleted:
+        return None
     return db_chatroom
 
 
