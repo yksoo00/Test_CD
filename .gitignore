@@ -4,5 +4,4 @@ __pycache__
 .pytest_cache
 .vscode
 db_data/
-.env.development
-.env.production
+.env
