@@ -13,13 +13,13 @@ router = APIRouter()
 
 
 # 새로운 사용자를 생성하는 API
-@router.post("/users", response_model=UserResponse)
+@router.post("/users", response_model=UserResponse, tags=["User"])
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     return UserService.create_user(db=db, user=user)
 
 
 # 사용자 목록을 조회하는 API
-@router.get("/users/{user_id}", response_model=UserResponse)
+@router.get("/users/{user_id}", response_model=UserResponse, tags=["User"])
 def read_user(user_id: int, db: Session = Depends(get_db)):
     user = UserService.get_user(db, user_id=user_id)
     if user is None:
@@ -28,7 +28,7 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
 
 
 # 사용자 닉네임을 수정하는 API
-@router.put("/users/{user_id}", response_model=UserResponse)
+@router.put("/users/{user_id}", response_model=UserResponse, tags=["User"])
 def modify_user(user_id: int, user: UserModify, db: Session = Depends(get_db)):
     user = UserService.modify_user(db, user_id, user)
     if user is None:
@@ -37,7 +37,7 @@ def modify_user(user_id: int, user: UserModify, db: Session = Depends(get_db)):
 
 
 # 새로운 채팅방을 생성하는 API
-@router.post("/chatrooms", response_model=ChatroomResponse)
+@router.post("/chatrooms", response_model=ChatroomResponse, tags=["Chatroom"])
 def create_chatroom(chatroom: ChatroomCreate, db: Session = Depends(get_db)):
     user = UserService.get_user(db, user_id=chatroom.user_id)
     if user is None:
@@ -51,7 +51,11 @@ def create_chatroom(chatroom: ChatroomCreate, db: Session = Depends(get_db)):
 
 
 # 채팅방 목록을 조회하는 API
-@router.delete("/chatrooms/{chatroom_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/chatrooms/{chatroom_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    tags=["Chatroom"],
+)
 def delete_chatroom(chatroom_id: int, db: Session = Depends(get_db)):
     chatroom = ChatroomService.get_chatroom(db, chatroom_id)
     if not chatroom:
@@ -70,20 +74,24 @@ def delete_chatroom(chatroom_id: int, db: Session = Depends(get_db)):
 
 
 # 멘토 생성
-@router.post("/mentors", response_model=MentorResponse)
+@router.post("/mentors", response_model=MentorResponse, tags=["Mentor"])
 def create_mentor(mentor: MentorCreate, db: Session = Depends(get_db)):
     return MentorService.create_mentor(db=db, mentor=mentor)
 
 
 # 멘토 목록 조회
-@router.get("/mentors", response_model=list[MentorResponse])
+@router.get("/mentors", response_model=list[MentorResponse], tags=["Mentor"])
 def read_mentors(db: Session = Depends(get_db)):
     mentors = MentorService.get_mentor_all(db)
     return mentors
 
 
 # 처방전 조회
-@router.get("/prescriptions/{prescription_id}", response_model=PrescriptionResponse)
+@router.get(
+    "/prescriptions/{prescription_id}",
+    response_model=PrescriptionResponse,
+    tags=["Prescription"],
+)
 def read_prescription(
     user_id: int, prescription_id: int, db: Session = Depends(get_db)
 ):
@@ -101,7 +109,9 @@ def read_prescription(
 
 
 # 처방전 목록 조회
-@router.get("/prescriptions", response_model=list[PrescriptionResponse])
+@router.get(
+    "/prescriptions", response_model=list[PrescriptionResponse], tags=["Prescription"]
+)
 def read_prescriptions(user_id: int, db: Session = Depends(get_db)):
     user = UserService.get_user(db, user_id=user_id)
     if user is None:
