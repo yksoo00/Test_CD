@@ -13,7 +13,9 @@ router = APIRouter()
 
 
 # 처방전 조회
-@router.get("/{prescription_id}", response_model=PrescriptionResponse)
+@router.get(
+    "/{prescription_id}", response_model=PrescriptionResponse, tags=["Prescription"]
+)
 def read_prescription(
     user_id: int, prescription_id: int, db: Session = Depends(get_db)
 ):
@@ -31,7 +33,7 @@ def read_prescription(
 
 
 # 처방전 목록 조회
-@router.get("", response_model=list[PrescriptionResponse])
+@router.get("", response_model=list[PrescriptionResponse], tags=["Prescription"])
 def read_prescriptions(user_id: int, db: Session = Depends(get_db)):
     user = UserService.get_user(db, user_id=user_id)
     if user is None:

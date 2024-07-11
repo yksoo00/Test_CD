@@ -12,7 +12,7 @@ router = APIRouter()
 
 
 # 새로운 채팅방을 생성하는 API
-@router.post(" ", response_model=ChatroomResponse)
+@router.post(" ", response_model=ChatroomResponse, tags=["Chatroom"])
 def create_chatroom(chatroom: ChatroomCreate, db: Session = Depends(get_db)):
     user = UserService.get_user(db, user_id=chatroom.user_id)
     if user is None:
@@ -26,7 +26,9 @@ def create_chatroom(chatroom: ChatroomCreate, db: Session = Depends(get_db)):
 
 
 # 채팅방 목록을 조회하는 API
-@router.delete("/{chatroom_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{chatroom_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Chatroom"]
+)
 def delete_chatroom(chatroom_id: int, db: Session = Depends(get_db)):
     chatroom = ChatroomService.get_chatroom(db, chatroom_id)
     if not chatroom:
