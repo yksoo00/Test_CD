@@ -9,6 +9,8 @@ services:
       - teamj_db
     volumes:
       - './app:/app'
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
     entrypoint:
       - sh
       - '-c'
@@ -16,8 +18,8 @@ services:
   teamj_db:
     image: 'mysql:latest'
     environment:
-      MYSQL_ROOT_PASSWORD: teamj
-      MYSQL_DATABASE: teamj_db
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
     ports:
       - '3306:3306'
     volumes:
