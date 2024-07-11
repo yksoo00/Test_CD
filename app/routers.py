@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, WebSocket
 from sqlalchemy.orm import Session
 from crud import user as UserService
 from crud import chatroom as ChatroomService
@@ -7,6 +7,7 @@ from crud import prescription as PrescriptionService
 from schemas import *
 from database import get_db
 from fastapi.responses import HTMLResponse
+from starlette.websockets import WebSocketDisconnect
 
 router = APIRouter()
 
@@ -112,3 +113,36 @@ def read_prescriptions(user_id: int, db: Session = Depends(get_db)):
 @router.get("/")
 async def get():
     return HTMLResponse(open("./templates/index.html").read())
+
+
+@router.websocket("/ws/chat")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    await websocket.send_json({"event": "connect", "message": "connected"})
+
+    async def get_server_message():
+        return client_message + "!"
+
+    try:
+        while True:
+            client_message = await websocket.receive_text()
+            print(f"Client: {client_message}")
+
+            server_message = await get_server_message()
+            print(f"Server: {server_message}")
+
+            # server_audio_task = generate_audio_from_string.apply_async(
+            #     args=[server_message],
+            # )
+
+            await websocket.send_json(
+                {
+                    "event": "server_message",
+                    "message": server_message,
+                    # "audio": server_audio_task.get(),
+                }
+            )
+
+    except WebSocketDisconnect:
+        print("client left")
+        await websocket.close()
