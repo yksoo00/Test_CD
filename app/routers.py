@@ -115,10 +115,35 @@ async def get():
     return HTMLResponse(open("./templates/index.html").read())
 
 
-@router.websocket("/ws/chat")
-async def websocket_endpoint(websocket: WebSocket):
+@router.websocket("/ws/chatrooms/{chatroom_id}")
+async def websocket_endpoint(
+    websocket: WebSocket, chatroom_id: int, user_id: int, db: Session = Depends(get_db)
+):
     await websocket.accept()
-    await websocket.send_json({"event": "connect", "message": "connected"})
+    chatroom = ChatroomService.get_chatroom(db, chatroom_id=chatroom_id)
+
+    if chatroom is None:
+        await websocket.send_json(
+            {"event": "disconnect", "message": "Chatroom not found"}
+        )
+        await websocket.close()
+        return
+
+    user = UserService.get_user(db, user_id=user_id)
+    if user is None:
+        await websocket.send_json({"event": "disconnect", "message": "User not found"})
+        await websocket.close()
+        return
+
+    await websocket.send_json(
+        {
+            "event": "connect",
+            "message": "connected",
+            "user_id": {user_id},
+            "chatroom_id": {chatroom_id},
+            "mentor_id": {chatroom.mentor_id},
+        }
+    )
 
     async def get_server_message():
         return client_message + "!"
@@ -145,4 +170,3 @@ async def websocket_endpoint(websocket: WebSocket):
 
     except WebSocketDisconnect:
         print("client left")
-        await websocket.close()
