@@ -30,7 +30,6 @@ class Mentor(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(50), nullable=False)
     description = Column(String(200), nullable=False)
-    is_spicy = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(KST))
     updated_at = Column(
         DateTime,
