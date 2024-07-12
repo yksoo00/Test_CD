@@ -12,7 +12,7 @@ router = APIRouter()
 
 
 # 새로운 채팅방을 생성하는 API
-@router.post(" ", response_model=ChatroomResponse, tags=["Chatroom"])
+@router.post("", response_model=ChatroomResponse, tags=["Chatroom"])
 def create_chatroom(chatroom: ChatroomCreate, db: Session = Depends(get_db)):
     user = UserService.get_user(db, user_id=chatroom.user_id)
     if user is None:
