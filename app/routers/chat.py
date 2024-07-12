@@ -6,6 +6,7 @@ from crud import chatroom as ChatroomService
 from schemas import *
 from database import get_db
 from starlette.websockets import WebSocketDisconnect
+from utils import celery_worker
 
 router = APIRouter()
 
@@ -40,9 +41,6 @@ async def websocket_endpoint(
         }
     )
 
-    async def get_server_message():
-        return client_message + "!"
-
     try:
         while True:
             client_message = await websocket.receive_text()
@@ -51,7 +49,9 @@ async def websocket_endpoint(
             )
             print(f"Client: {client_message}")
 
-            server_message = await get_server_message()
+            task = celery_worker.gpt_answer.delay(client_message)
+
+            server_message = task.get()
             ChatService.create_chat(
                 db, chatroom_id=chatroom_id, is_user=False, content=server_message
             )

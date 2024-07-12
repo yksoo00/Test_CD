@@ -6,3 +6,5 @@ pymysql
 cryptography
 pytz
 celery
+openai 
+langchain
