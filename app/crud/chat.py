@@ -12,6 +12,10 @@ def create_chat(db: Session, is_user: bool, chatroom_id: int, content: str):
 
 
 def get_all_chat(db: Session, chatroom_id: int):
-    # TODO 로직 구현
-    # 전체 채팅을 불러와서 사이에 개행문자 삽입 후 문자열 반환
-    pass
+    chat_list = [
+        chat.content
+        for chat in db.query(Chat).filter(Chat.chatroom_id == chatroom_id).all()
+    ]
+
+    chat_list = "\n".join(chat_list)
+    return chat_list
