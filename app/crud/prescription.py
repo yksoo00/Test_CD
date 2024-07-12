@@ -3,10 +3,11 @@ from models import *
 from schemas import *
 
 
-def create_prescription(db: Session, chatroom_id: int, user_id: int, mentor_id: int):
-    dummy_content = "dummy content"
+def create_prescription(
+    db: Session, chatroom_id: int, user_id: int, mentor_id: int, content=str
+):
     db_prescription = Prescription(
-        id=chatroom_id, user_id=user_id, mentor_id=mentor_id, content=dummy_content
+        user_id=user_id, mentor_id=mentor_id, content=content
     )
     db.add(db_prescription)
     db.commit()

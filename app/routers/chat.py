@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from crud import user as UserService
 from crud import chat as ChatService
 from crud import chatroom as ChatroomService
+from crud import prescription as PrescriptionService
 from schemas import *
 from database import get_db
 from starlette.websockets import WebSocketDisconnect
@@ -70,4 +71,14 @@ async def websocket_endpoint(
             )
 
     except WebSocketDisconnect:
+        prescription = ChatService.get_all_chat(db, chatroom_id=chatroom_id)
+        PrescriptionService.create_prescription(
+            db,
+            chatroom_id=chatroom_id,
+            user_id=user_id,
+            mentor_id=chatroom.mentor_id,
+            content=prescription,
+        )
+        ChatroomService.delete_chatroom(db, chatroom_id=chatroom_id)
+
         print("client left")

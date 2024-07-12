@@ -11,6 +11,7 @@
         <input type="text" id="messageText" autocomplete="off" />
         <button>Send</button>
     </form>
+    <button id="disconnectBtn" onclick="disconnect()">Leave Chat</button>
     <ul id='messages'>
     </ul>
     <script>
@@ -20,7 +21,7 @@
             const data = JSON.parse(event.data);
             const eventType = data.event;
             console.log(eventType);
-            if (eventType == "disconnect"){
+            if (eventType == "disconnect") {
                 var messages = document.getElementById('messages');
                 var messageLi = document.createElement('li');
                 messageLi.appendChild(document.createTextNode(data.message));
@@ -69,6 +70,16 @@
             ws.send(input.value);
             input.value = '';
             event.preventDefault();
+        }
+
+        const disconnect = () => {
+            if (ws) {
+                ws.close();
+                var messages = document.getElementById('messages');
+                var messageLi = document.createElement('li');
+                messageLi.appendChild(document.createTextNode("Disconnected from the chatroom"));
+                messages.appendChild(messageLi);
+            }
         }
     </script>
 </body>
