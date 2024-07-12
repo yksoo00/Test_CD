@@ -3,6 +3,7 @@ from models import *
 from schemas import *
 
 
+# TODO dummy_content가 아닌 실제 채팅 기록을 삽입하도록 구현
 def create_prescription(db: Session, chatroom_id: int, user_id: int, mentor_id: int):
     dummy_content = "dummy content"
     db_prescription = Prescription(

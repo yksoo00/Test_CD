@@ -70,4 +70,9 @@ async def websocket_endpoint(
             )
 
     except WebSocketDisconnect:
+        # TODO
+        # 1. 채팅방 delete
+        # 2. 전체 채팅 기록 조회
+        # 3. 처방전 만들기 (전체 채팅 기록 넣어서)
+
         print("client left")
