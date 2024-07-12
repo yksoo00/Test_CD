@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, WebSocket
 from sqlalchemy.orm import Session
 from crud import user as UserService
+from crud import chat as ChatService
 from crud import chatroom as ChatroomService
 from schemas import *
 from database import get_db
@@ -45,9 +46,15 @@ async def websocket_endpoint(
     try:
         while True:
             client_message = await websocket.receive_text()
+            ChatService.create_chat(
+                db, chatroom_id=chatroom_id, is_user=True, content=client_message
+            )
             print(f"Client: {client_message}")
 
             server_message = await get_server_message()
+            ChatService.create_chat(
+                db, chatroom_id=chatroom_id, is_user=False, content=server_message
+            )
             print(f"Server: {server_message}")
 
             # server_audio_task = generate_audio_from_string.apply_async(
