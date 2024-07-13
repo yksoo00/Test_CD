@@ -1,6 +1,5 @@
 from sqlalchemy.orm import Session
 from models import Prescription
-from schemas import PrescriptionCreate
 
 
 def create_prescription(

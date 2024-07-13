@@ -1,13 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status, WebSocket
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from crud import user as UserService
-from crud import chatroom as ChatroomService
-from crud import mentor as MentorService
 from crud import prescription as PrescriptionService
 from schemas import *
 from database import get_db
-from fastapi.responses import HTMLResponse
-from starlette.websockets import WebSocketDisconnect
 
 router = APIRouter()
 

@@ -4,7 +4,6 @@ from crud import user as UserService
 from crud import chat as ChatService
 from crud import chatroom as ChatroomService
 from crud import prescription as PrescriptionService
-from schemas import *
 from database import get_db
 from starlette.websockets import WebSocketDisconnect
 from utils import celery_worker
