@@ -1,11 +1,8 @@
 from sqlalchemy.orm import Session
-from models import *
-from schemas import *
+from models import Prescription
 
 
-def create_prescription(
-    db: Session, chatroom_id: int, user_id: int, mentor_id: int, content=str
-):
+def create_prescription(db: Session, user_id: int, mentor_id: int, content=str):
     db_prescription = Prescription(
         user_id=user_id, mentor_id=mentor_id, content=content
     )

@@ -4,7 +4,6 @@ from crud import user as UserService
 from crud import chat as ChatService
 from crud import chatroom as ChatroomService
 from crud import prescription as PrescriptionService
-from schemas import *
 from database import get_db
 from starlette.websockets import WebSocketDisconnect
 from utils import celery_worker
@@ -58,15 +57,10 @@ async def websocket_endpoint(
             )
             print(f"Server: {server_message}")
 
-            # server_audio_task = generate_audio_from_string.apply_async(
-            #     args=[server_message],
-            # )
-
             await websocket.send_json(
                 {
                     "event": "server_message",
                     "message": server_message,
-                    # "audio": server_audio_task.get(),
                 }
             )
 
@@ -74,7 +68,6 @@ async def websocket_endpoint(
         prescription = ChatService.get_all_chat(db, chatroom_id=chatroom_id)
         PrescriptionService.create_prescription(
             db,
-            chatroom_id=chatroom_id,
             user_id=user_id,
             mentor_id=chatroom.mentor_id,
             content=prescription,
