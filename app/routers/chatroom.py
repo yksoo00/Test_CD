@@ -26,21 +26,21 @@ def create_chatroom(chatroom: ChatroomCreate, db: Session = Depends(get_db)):
 
 
 # 채팅방을 삭제하는 API
-# @router.delete(
-#     "/{chatroom_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Chatroom"]
-# )
-# def delete_chatroom(chatroom_id: int, db: Session = Depends(get_db)):
-#     chatroom = ChatroomService.get_chatroom(db, chatroom_id)
-#     if not chatroom:
-#         raise HTTPException(status_code=404, detail="Chatroom not found")
+@router.delete(
+    "/{chatroom_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Chatroom"]
+)
+def delete_chatroom(chatroom_id: int, db: Session = Depends(get_db)):
+    chatroom = ChatroomService.get_chatroom(db, chatroom_id)
+    if not chatroom:
+        raise HTTPException(status_code=404, detail="Chatroom not found")
 
-#     # 처방전 생성
-#     PrescriptionService.create_prescription(
-#         db=db,
-#         chatroom_id=chatroom.id,
-#         user_id=chatroom.user.id,
-#         mentor_id=chatroom.mentor.id,
-#     )
+    # 처방전 생성
+    PrescriptionService.create_prescription(
+        db=db,
+        chatroom_id=chatroom.id,
+        user_id=chatroom.user.id,
+        mentor_id=chatroom.mentor.id,
+    )
 
-#     # 채팅방 삭제
-#     ChatroomService.delete_chatroom(db, chatroom_id)
+    # 채팅방 삭제
+    ChatroomService.delete_chatroom(db, chatroom_id)
