@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from crud import mentor as MentorService
-from schemas import *
+from schemas import MentorCreate, MentorResponse
 from database import get_db
 
 

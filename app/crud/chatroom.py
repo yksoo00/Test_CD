@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from models import *
-from schemas import *
+from models import Chatroom
+from schemas import ChatroomCreate
 
 
 def create_chatroom(db: Session, chatroom: ChatroomCreate):

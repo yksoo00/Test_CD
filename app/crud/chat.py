@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from models import *
-from schemas import *
+from models import Chat
+from schemas import ChatCreate
 
 
 def create_chat(db: Session, is_user: bool, chatroom_id: int, content: str):

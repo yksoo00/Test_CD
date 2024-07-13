@@ -4,7 +4,7 @@ from crud import user as UserService
 from crud import chatroom as ChatroomService
 from crud import mentor as MentorService
 from crud import prescription as PrescriptionService
-from schemas import *
+from schemas import ChatroomCreate, ChatroomResponse
 from database import get_db
 
 
