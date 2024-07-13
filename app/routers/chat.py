@@ -68,7 +68,6 @@ async def websocket_endpoint(
         prescription = ChatService.get_all_chat(db, chatroom_id=chatroom_id)
         PrescriptionService.create_prescription(
             db,
-            chatroom_id=chatroom_id,
             user_id=user_id,
             mentor_id=chatroom.mentor_id,
             content=prescription,
