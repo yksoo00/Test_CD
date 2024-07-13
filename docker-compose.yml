@@ -24,6 +24,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
+      LANG: C.UTF-8
     ports:
       - '3306:3306'
     volumes:

@@ -18,3 +18,18 @@ def create_mentor(mentor: MentorCreate, db: Session = Depends(get_db)):
 def read_mentors(db: Session = Depends(get_db)):
     mentors = MentorService.get_mentor_all(db)
     return mentors
+
+
+@router.post(
+    "/create_defaults_mentor", response_model=list[MentorResponse], tags=["Mentor"]
+)
+def create_default_mentor(db: Session = Depends(get_db)):
+    default_mentors = [
+        MentorCreate(name="오은영", description="오은영 설명"),
+        MentorCreate(name="백종원", description="백종원 설명"),
+        MentorCreate(name="신동엽", description="신동엽 설명"),
+    ]
+    created_mentors = []
+    for default in default_mentors:
+        created_mentors.append(MentorService.create_mentor(db=db, mentor=default))
+    return created_mentors
