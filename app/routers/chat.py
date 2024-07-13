@@ -57,15 +57,10 @@ async def websocket_endpoint(
             )
             print(f"Server: {server_message}")
 
-            # server_audio_task = generate_audio_from_string.apply_async(
-            #     args=[server_message],
-            # )
-
             await websocket.send_json(
                 {
                     "event": "server_message",
                     "message": server_message,
-                    # "audio": server_audio_task.get(),
                 }
             )
 
