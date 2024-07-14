@@ -23,6 +23,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 요청받은 엔드포인트로 라우터 연결
 app.include_router(user.router, prefix="/api/users")
 app.include_router(chat.router, prefix="/api/ws")
 app.include_router(mentor.router, prefix="/api/mentors")

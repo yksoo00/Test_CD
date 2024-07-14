@@ -16,9 +16,11 @@ def read_prescription(
     user_id: int, prescription_id: int, db: Session = Depends(get_db)
 ):
     user = UserService.get_user(db, user_id=user_id)
+    # 사용자 존재 여부 확인
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     prescription = PrescriptionService.get_prescription(db, prescription_id)
+    # 처방전 존재 여부 확인
     if prescription is None:
         raise HTTPException(status_code=404, detail="Prescription not found")
 
