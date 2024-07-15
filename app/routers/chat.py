@@ -87,11 +87,12 @@ how would you respond to this inquiry: "{question}"?',
                 api_key=os.environ["OPENAI_API_KEY"],
             )
 
-            messages = [{"role": "system", "content": prompt}]
-            messages += [
+            messages = [
                 {"role": msg["role"], "content": msg["content"]}
                 for msg in memory.chat_memory.messages
             ]
+            messages += [{"role": "system", "content": prompt}]
+
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo", messages=messages
             )
