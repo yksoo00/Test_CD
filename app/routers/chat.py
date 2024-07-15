@@ -6,8 +6,13 @@ from crud import chatroom as ChatroomService
 from crud import prescription as PrescriptionService
 from database import get_db
 from starlette.websockets import WebSocketDisconnect
+from openai import OpenAI
+from langchain.prompts import PromptTemplate
+from langchain.memory import ConversationBufferMemory
+import os
 from utils import celery_worker
 import re
+
 
 router = APIRouter()
 
@@ -41,17 +46,65 @@ async def websocket_endpoint(
             "mentor_id": chatroom.mentor_id,
         }
     )
+    prompt_template = PromptTemplate(
+        input_variables=["context", "question"],
+        template="""
+           
+            a wise and experienced advisor. Given the context: "{context}",
+            how would you respond to this inquiry: "{question}"?',
+            1줄로 말해
+            (in korean)
+            """,
+    )
 
+    def generate_prompt(question, context):
+        return prompt_template.format(
+            question=question,
+            context=context,
+        )
+
+    context = ""
+    history_message = ""
+
+    memory = ConversationBufferMemory()
     try:
         while True:
             client_message = await websocket.receive_text()
+
             ChatService.create_chat(
                 db, chatroom_id=chatroom_id, is_user=True, content=client_message
             )
 
-            task = celery_worker.gpt_answer.delay(client_message)
+            memory.chat_memory.messages = []
 
-            server_message = task.get()
+            ChatService.load_memory(history_message, memory)
+
+            prompt = generate_prompt(client_message, context)
+
+            client = OpenAI(
+                api_key=os.environ["OPENAI_API_KEY"],
+            )
+
+            messages = [{"role": "system", "content": prompt}]
+            messages += [
+                {"role": msg["role"], "content": msg["content"]}
+                for msg in memory.chat_memory.messages
+            ]
+            response = client.chat.completions.create(
+                model="gpt-3.5-turbo", messages=messages
+            )
+            server_message = response.choices[0].message.content.strip()
+
+            memory.chat_memory.messages.append(
+                {"role": "user", "content": client_message}
+            )
+
+            memory.chat_memory.messages.append(
+                {"role": "system", "content": server_message}
+            )
+
+            history_message = memory.buffer_as_messages
+
 
             server_message = re.sub(r"[^\uAC00-\uD7A30-9a-zA-Z\s]", "", server_message)
             ChatService.create_chat(
@@ -61,11 +114,13 @@ async def websocket_endpoint(
 
             server_audio = task_audio.get()
 
+
             await websocket.send_json(
                 {
                     "event": "server_message",
                     "message": server_message,
                     "audio": server_audio,
+
                 }
             )
 
