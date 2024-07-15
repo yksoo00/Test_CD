@@ -7,6 +7,7 @@ from crud import prescription as PrescriptionService
 from database import get_db
 from starlette.websockets import WebSocketDisconnect
 from utils import celery_worker
+import re
 
 router = APIRouter()
 
@@ -47,20 +48,24 @@ async def websocket_endpoint(
             ChatService.create_chat(
                 db, chatroom_id=chatroom_id, is_user=True, content=client_message
             )
-            print(f"Client: {client_message}")
 
             task = celery_worker.gpt_answer.delay(client_message)
 
             server_message = task.get()
+
+            server_message = re.sub(r"[^\uAC00-\uD7A30-9a-zA-Z\s]", "", server_message)
             ChatService.create_chat(
                 db, chatroom_id=chatroom_id, is_user=False, content=server_message
             )
-            print(f"Server: {server_message}")
+            task_audio = celery_worker.generate_audio_from_string.delay(server_message)
+
+            server_audio = task_audio.get()
 
             await websocket.send_json(
                 {
                     "event": "server_message",
                     "message": server_message,
+                    "audio": server_audio,
                 }
             )
 
