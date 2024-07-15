@@ -1,8 +1,9 @@
 from sqlalchemy.orm import Session
-from models import *
-from schemas import *
+from models import Chatroom
+from schemas import ChatroomCreate
 
 
+# 채팅방 인스턴스 생성 후 DB에 추가해주는 함수
 def create_chatroom(db: Session, chatroom: ChatroomCreate):
     db_chatroom = Chatroom(user_id=chatroom.user_id, mentor_id=chatroom.mentor_id)
     db.add(db_chatroom)
@@ -11,6 +12,7 @@ def create_chatroom(db: Session, chatroom: ChatroomCreate):
     return db_chatroom
 
 
+# DB에서 채팅방 불러오는 함수
 def get_chatroom(db: Session, chatroom_id: int):
     db_chatroom = db.query(Chatroom).filter(Chatroom.id == chatroom_id).first()
     if db_chatroom is None or db_chatroom.is_deleted:
@@ -18,6 +20,7 @@ def get_chatroom(db: Session, chatroom_id: int):
     return db_chatroom
 
 
+# DB에서 치탱방 삭제하는 함수
 def delete_chatroom(db: Session, chatroom_id: int):
     db_chatroom = db.query(Chatroom).filter(Chatroom.id == chatroom_id).first()
     db_chatroom.is_deleted = True

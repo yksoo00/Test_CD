@@ -4,7 +4,7 @@ from crud import user as UserService
 from crud import chatroom as ChatroomService
 from crud import mentor as MentorService
 from crud import prescription as PrescriptionService
-from schemas import *
+from schemas import ChatroomCreate, ChatroomResponse
 from database import get_db
 
 
@@ -25,7 +25,7 @@ def create_chatroom(chatroom: ChatroomCreate, db: Session = Depends(get_db)):
     return ChatroomService.create_chatroom(db=db, chatroom=chatroom)
 
 
-# 채팅방 목록을 조회하는 API
+# 채팅방을 삭제하는 API
 @router.delete(
     "/{chatroom_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Chatroom"]
 )
