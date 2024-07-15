@@ -48,13 +48,11 @@ async def websocket_endpoint(
     )
     prompt_template = PromptTemplate(
         input_variables=["context", "question"],
-        template="""
-           
-            a wise and experienced advisor. Given the context: "{context}",
-            how would you respond to this inquiry: "{question}"?',
-            1줄로 말해
-            (in korean)
-            """,
+        template="""you are a wise and experienced advisor. Given the context: "{context}",
+how would you respond to this inquiry: "{question}"?',
+1줄로 말해
+(in korean)
+""",
     )
 
     def generate_prompt(question, context):
@@ -81,6 +79,10 @@ async def websocket_endpoint(
 
             prompt = generate_prompt(client_message, context)
 
+            memory.chat_memory.messages.append(
+                {"role": "user", "content": client_message}
+            )
+
             client = OpenAI(
                 api_key=os.environ["OPENAI_API_KEY"],
             )
@@ -96,17 +98,13 @@ async def websocket_endpoint(
             server_message = response.choices[0].message.content.strip()
 
             memory.chat_memory.messages.append(
-                {"role": "user", "content": client_message}
-            )
-
-            memory.chat_memory.messages.append(
-                {"role": "system", "content": server_message}
+                {"role": "assistant", "content": server_message}
             )
 
             history_message = memory.buffer_as_messages
 
-
             server_message = re.sub(r"[^\uAC00-\uD7A30-9a-zA-Z\s]", "", server_message)
+
             ChatService.create_chat(
                 db, chatroom_id=chatroom_id, is_user=False, content=server_message
             )
@@ -114,13 +112,11 @@ async def websocket_endpoint(
 
             server_audio = task_audio.get()
 
-
             await websocket.send_json(
                 {
                     "event": "server_message",
                     "message": server_message,
                     "audio": server_audio,
-
                 }
             )
 
