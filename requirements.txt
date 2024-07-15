@@ -8,5 +8,6 @@ pytz
 celery
 openai 
 langchain
-gtts
 pydub
+gtts
+
