@@ -39,11 +39,6 @@ class ChatroomResponse(BaseModel):
         from_attribute = True
 
 
-class ChatCreate(BaseModel):
-    is_user: bool
-    content: str
-
-
 class MentorBase(BaseModel):
     name: str
     description: str

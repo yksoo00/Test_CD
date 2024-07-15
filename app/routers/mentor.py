@@ -14,12 +14,14 @@ def create_mentor(mentor: MentorCreate, db: Session = Depends(get_db)):
     return MentorService.create_mentor(db=db, mentor=mentor)
 
 
+# 멘토 조회
 @router.get("", response_model=list[MentorResponse], tags=["Mentor"])
 def read_mentors(db: Session = Depends(get_db)):
     mentors = MentorService.get_mentor_all(db)
     return mentors
 
 
+# 디폴트 멘토 생성
 @router.post(
     "/create_defaults_mentor", response_model=list[MentorResponse], tags=["Mentor"]
 )
