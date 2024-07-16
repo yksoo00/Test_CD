@@ -10,4 +10,6 @@ openai
 langchain
 pydub
 gtts
-
+deep-translator
+opensearch-py
+tiktoken
