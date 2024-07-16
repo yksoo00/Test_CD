@@ -1,14 +1,15 @@
 from deep_translator import GoogleTranslator
 from opensearchpy import OpenSearch
 import tiktoken
+import os
 
 translator = GoogleTranslator(source="ko", target="en")
 
-
+oepnsearch_url = os.environ["OPENSEARCH_URL"]
 opensearch = OpenSearch(
     hosts=[
         {
-            "host": "search-teamj-oppxbwjfn6vkdnb2krsjegktqe.us-east-2.es.amazonaws.com",
+            "host": oepnsearch_url,
             "port": 443,
         }
     ],
@@ -78,7 +79,8 @@ def combined_contexts(question, prompt_template, INDEX_NAME):
     context = " ".join(combined_results)
     # 토큰 수 계산
     full_prompt = prompt_template.format(context=context, question=question)
-
+    print(context)
+    print("\n")
     # 전체 프롬프트 텍스트의 토큰 수 계산
     total_tokens = count_tokens(full_prompt)
 
