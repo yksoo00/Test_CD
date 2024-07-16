@@ -6,6 +6,9 @@ import os
 translator = GoogleTranslator(source="ko", target="en")
 
 oepnsearch_url = os.environ["OPENSEARCH_URL"]
+oepnsearch_admin = os.environ["OPENSEARCH_ADMIN"]
+oepnsearch_password = os.environ["OPENSEARCH_PASSWORD"]
+
 opensearch = OpenSearch(
     hosts=[
         {
@@ -13,7 +16,7 @@ opensearch = OpenSearch(
             "port": 443,
         }
     ],
-    http_auth=("admin", "Teamj12@"),
+    http_auth=(oepnsearch_admin, oepnsearch_password),
     use_ssl=True,
     verify_certs=True,
     ssl_assert_hostname=False,
@@ -32,8 +35,7 @@ def search_documents_en(query, INDEX_NAME):
                 "text": {
                     "query": query,
                     "analyzer": "english",
-                    "prefix_length": 1,
-                    "minimum_should_match": 2,
+                    "minimum_should_match": 1,
                 }
             }
         }
@@ -48,14 +50,27 @@ def search_documents_ko(query, INDEX_NAME):
     search_body = {
         "query": {
             "match": {
-                "text": {"query": query, "prefix_length": 1, "minimum_should_match": 2}
+                "text": {
+                    "query": query,
+                }
             }
         }
     }
     # search_all_body = {"query": {"match_all": {}}}
     response = opensearch.search(index=INDEX_NAME, body=search_body)
     hits = response["hits"]["hits"]
-    return [hit["_source"]["text"] for hit in hits]
+
+    # 중복 제거를 위한 결과 저장용 세트
+    unique_texts = set()
+    result_texts = []
+
+    for hit in hits:
+        text = hit["_source"]["text"]
+        if text not in unique_texts:
+            unique_texts.add(text)
+            result_texts.append(text)
+
+    return result_texts
 
 
 # 토큰 수 계산 함수
@@ -66,6 +81,7 @@ def count_tokens(text, model_name="cl100k_base"):
 
 
 def combined_contexts(question, prompt_template, INDEX_NAME):
+
     translated_question = translate_text(question)
 
     # 영어 번역된 질문으로 검색
@@ -73,14 +89,12 @@ def combined_contexts(question, prompt_template, INDEX_NAME):
 
     # 한국어 질문으로 검색
     korean_search_results = search_documents_ko(question, INDEX_NAME)
-
     # 두 결과를 결합
     combined_results = english_search_results + korean_search_results
+
     context = " ".join(combined_results)
-    # 토큰 수 계산
-    full_prompt = prompt_template.format(context=context, question=question)
     print(context)
-    print("\n")
+    full_prompt = prompt_template.format(context=context, question=question)
     # 전체 프롬프트 텍스트의 토큰 수 계산
     total_tokens = count_tokens(full_prompt)
 
