@@ -107,12 +107,13 @@ How would you respond to the question: "{question}"?
 
             history_message = memory.buffer_as_messages
 
-            server_message = re.sub(r"[^\uAC00-\uD7A30-9a-zA-Z\s]", "", server_message)
-
             ChatService.create_chat(
                 db, chatroom_id=chatroom_id, is_user=False, content=server_message
             )
-            task_audio = celery_worker.generate_audio_from_string.delay(server_message)
+
+            task_audio = celery_worker.generate_audio_from_string.delay(
+                re.sub(r"[^\uAC00-\uD7A30-9a-zA-Z\s]", "", server_message)
+            )
 
             server_audio = task_audio.get()
             print(f"Total tokens: {total_tokens}")
