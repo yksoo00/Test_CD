@@ -14,3 +14,5 @@ opensearch-py
 tiktoken
 edge_tts
 librosa
+pytest
+

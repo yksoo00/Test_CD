@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, WebSocket
 from sqlalchemy.orm import Session
 from starlette.websockets import WebSocketDisconnect
-from openai import OpenAI
 from langchain.memory import ConversationBufferMemory
 from crud import user as UserService
 from crud import chat as ChatService
@@ -10,12 +9,12 @@ from crud import prescription as PrescriptionService
 from database import get_db
 from utils import opensearch as opensearchService
 from utils import celery_worker
-import os
+from utils.gpt import get_gpt_answer
 import re
+import json
 
 
 router = APIRouter()
-
 
 voice_model_list = ("ko-KR-InJoonNeural", "ko-KR-SunHiNeural", "ko-KR-HyunsuNeural")
 
@@ -72,9 +71,6 @@ async def websocket_endpoint(
     )
 
     memory = ConversationBufferMemory()
-    client = OpenAI(
-        api_key=os.environ["OPENAI_API_KEY"],
-    )
 
     try:
         while True:
@@ -94,10 +90,7 @@ async def websocket_endpoint(
             gpt_payload = generate_gpt_payload(memory.chat_memory.messages, prompt)
 
             # GPT에게 답변 요청
-            gpt_response = client.chat.completions.create(
-                model=GPT_MODEL, messages=gpt_payload
-            )
-            gpt_answer = gpt_response.choices[0].message.content.strip()
+            gpt_answer = get_gpt_answer(gpt_payload)
 
             # 대화 기록에 사용자의 메시지와 GPT의 답변 추가
             memory.chat_memory.messages.append(
@@ -128,8 +121,19 @@ async def websocket_endpoint(
 
     # 연결이 끊어졌을 때
     except WebSocketDisconnect:
+
+        prompt = """Create a brief prescription-style summary in Korean based on the following conversation between a client and a counselor.
+The summary should provide a concise solution derived from the conversation.
+Limit the length of the summary to no more than a few sentences.
+Conversation : """ + json.dumps(
+            memory.chat_memory.messages, ensure_ascii=False
+        )
+
+        prescription_content = get_gpt_answer(
+            [{"role": "assistant", "content": prompt}]
+        )
+
         # 모든 채팅 내용으로 처방전 생성
-        prescription_content = ChatService.get_all_chat(db, chatroom_id=chatroom_id)
         PrescriptionService.create_prescription(
             db,
             user_id=user_id,
