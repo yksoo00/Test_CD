@@ -26,3 +26,34 @@ class TestUser(unittest.TestCase):
         db_user = self.db.query(User).filter(User.id == test_user.id).first()
 
         assert db_user.nickname == test_nickname
+
+    def test_get_user(self):
+        test_nickname = "test"
+        test_user = User(nickname=test_nickname)
+        self.db.add(test_user)
+        self.db.commit()
+        self.db.refresh(test_user)
+
+        db_user = get_user(self.db, test_user.id)
+        assert db_user.nickname == test_nickname
+
+    def test_modify_user(self):
+        test_nickname = "test"
+        test_user = User(nickname=test_nickname)
+        self.db.add(test_user)
+        self.db.commit()
+        self.db.refresh(test_user)
+
+        new_nickname = "new_test"
+        modify_user(self.db, test_user.id, UserModify(nickname=new_nickname))
+
+        db_user = self.db.query(User).filter(User.id == test_user.id).first()
+
+        assert db_user.nickname == new_nickname
+
+    def test_modify_user_not_found(self):
+
+        new_nickname = "new_test"
+        db_user = modify_user(self.db, 1, UserModify(nickname=new_nickname))
+
+        assert db_user is None
