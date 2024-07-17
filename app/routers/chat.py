@@ -16,6 +16,21 @@ import re
 
 router = APIRouter()
 
+GPT_MODEL = "gpt-3.5-turbo"
+
+
+def load_history_to_memory(chat_history, memory):
+    if chat_history:
+        memory.chat_memory.messages.extend(chat_history)
+
+
+def generate_gpt_payload(chat_memory_messages, prompt):
+    gpt_payload = [
+        {"role": msg["role"], "content": msg["content"]} for msg in chat_memory_messages
+    ]
+    gpt_payload += [{"role": "assistant", "content": prompt}]
+    return gpt_payload
+
 
 @router.websocket("/chatrooms/{chatroom_id}")
 async def websocket_endpoint(
@@ -47,9 +62,12 @@ async def websocket_endpoint(
         }
     )
 
-    history_message = ""
+    chat_history = ""
     memory = ConversationBufferMemory()
     try:
+        client = OpenAI(
+            api_key=os.environ["OPENAI_API_KEY"],
+        )
         while True:
             client_message = await websocket.receive_text()
 
@@ -59,55 +77,47 @@ async def websocket_endpoint(
 
             memory.chat_memory.messages = []
 
-            ChatService.load_memory(history_message, memory)
+            load_history_to_memory(chat_history, memory)
 
-            prompt, total_tokens = opensearchService.combined_contexts(
+            prompt = opensearchService.combined_contexts(
                 client_message, chatroom.mentor_id
             )
+
+            gpt_payload = generate_gpt_payload(memory.chat_memory_message, prompt)
+
+            print(gpt_payload)
+
+            gpt_response = client.chat.completions.create(
+                model=GPT_MODEL, messages=gpt_payload
+            )
+            gpt_answer = gpt_response.choices[0].message.content.strip()
 
             memory.chat_memory.messages.append(
                 {"role": "user", "content": client_message}
             )
-
-            client = OpenAI(
-                api_key=os.environ["OPENAI_API_KEY"],
-            )
-
-            messages = [
-                {"role": msg["role"], "content": msg["content"]}
-                for msg in memory.chat_memory.messages
-            ]
-            messages += [{"role": "system", "content": prompt}]
-
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo", messages=messages
-            )
-            server_message = response.choices[0].message.content.strip()
-
             memory.chat_memory.messages.append(
-                {"role": "assistant", "content": server_message}
+                {"role": "assistant", "content": gpt_answer}
             )
 
-            history_message = memory.buffer_as_messages
-
-            ChatService.create_chat(
-                db, chatroom_id=chatroom_id, is_user=False, content=server_message
-            )
+            chat_history = memory.buffer_as_messages
 
             # 음성을 생성하는 celery task 실행
             task_audio = celery_worker.generate_audio_from_string.delay(
                 # 한글, 영어, 숫자, 공백만 남기고 제거
-                re.sub(r"[^\uAC00-\uD7A3a-zA-Z0-9 ]", "", server_message)
+                re.sub(r"[^\uAC00-\uD7A3a-zA-Z0-9 ]", "", gpt_answer)
             )
 
             server_audio = task_audio.get()
-            print(f"Total tokens: {total_tokens}")
             await websocket.send_json(
                 {
                     "event": "server_message",
-                    "message": server_message,
+                    "message": gpt_answer,
                     "audio": server_audio,
                 }
+            )
+
+            ChatService.create_chat(
+                db, chatroom_id=chatroom_id, is_user=False, content=gpt_answer
             )
 
     except WebSocketDisconnect:
