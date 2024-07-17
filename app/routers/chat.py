@@ -111,8 +111,10 @@ How would you respond to the question: "{question}"?
                 db, chatroom_id=chatroom_id, is_user=False, content=server_message
             )
 
+            # 음성을 생성하는 celery task 실행
             task_audio = celery_worker.generate_audio_from_string.delay(
-                re.sub(r"[^\uAC00-\uD7A30-9a-zA-Z\s]", "", server_message)
+                # 한글, 영어, 숫자, 공백만 남기고 제거
+                re.sub(r"[^\uAC00-\uD7A3a-zA-Z0-9 ]", "", server_message)
             )
 
             server_audio = task_audio.get()
