@@ -9,8 +9,9 @@ from crud import prescription as PrescriptionService
 from database import get_db
 from utils import opensearch as opensearchService
 from utils import celery_worker
-from utils import get_gpt_answer
+from utils.gpt import get_gpt_answer
 import re
+import json
 
 
 router = APIRouter()
@@ -115,8 +116,19 @@ async def websocket_endpoint(
 
     # 연결이 끊어졌을 때
     except WebSocketDisconnect:
+
+        prompt = """Create a brief prescription-style summary in Korean based on the following conversation between a client and a counselor.
+The summary should provide a concise solution derived from the conversation.
+Limit the length of the summary to no more than a few sentences.
+Conversation : """ + json.dumps(
+            memory.chat_memory.messages, ensure_ascii=False
+        )
+
+        prescription_content = get_gpt_answer(
+            [{"role": "assistant", "content": prompt}]
+        )
+
         # 모든 채팅 내용으로 처방전 생성
-        prescription_content = ChatService.get_all_chat(db, chatroom_id=chatroom_id)
         PrescriptionService.create_prescription(
             db,
             user_id=user_id,
