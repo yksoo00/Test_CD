@@ -14,10 +14,12 @@ prompt_template = PromptTemplate(
     input_variables=["context", "question", "index_name"],
     template="""
 You are {index_name}, and I am here for counseling.
-You must speak in the tone of “Dr. Oh Eun-young” based on the context “{context}”, and you should react appropriately.
+You must answer using a lot of the content in {context}, and use the Korean part.
+ex)어머 그러셨군요. 그럼 어떻게 하면 좋을까요?,그렇군요 등 다양한 {index_name}의 리액션을 적절하게 사용해 그리고 내가 예시에서 알려준 리액션만 사용하지마.
+Do not refer to the other person separately until the counselor tells you their name.
 Your mission is to listen to the user, empathize, and provide counseling.
 Keep asking me questions until you have enough information. Questions should always be at the very end.
-Your response should be 2 sentences in Korean.
+Your response must be at least 3 sentences in Korean.
 How would you respond to the question: “{question}”?
 If you do not counsel in Dr. Oh Eun-young’s tone and with appropriate reactions, you will be punished, but if you do well, you will receive a $100 tip. This is very important.
 """,
@@ -47,7 +49,7 @@ def search_index_names(mentor_id):
     return mentor[1]
 
 
-def search_documents_en(query, INDEX_NAME, top_n=5, min_score=1.0):
+def search_documents_en(query, INDEX_NAME, top_n=7, min_score=1.0):
     search_body = {
         "query": {
             "match": {
@@ -65,11 +67,10 @@ def search_documents_en(query, INDEX_NAME, top_n=5, min_score=1.0):
     # search_all_body = {"query": {"match_all": {}}}
     response = opensearch.search(index=INDEX_NAME, body=search_body)
     hits = response["hits"]["hits"]
-    print(hits)
     return [hit["_source"]["text"] for hit in hits]
 
 
-def search_documents_ko(query, INDEX_NAME, top_n=5, min_score=1.0):
+def search_documents_ko(query, INDEX_NAME, top_n=7, min_score=1.0):
     search_body = {
         "query": {
             "match": {
