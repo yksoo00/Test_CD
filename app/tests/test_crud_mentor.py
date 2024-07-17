@@ -17,19 +17,25 @@ class TestMentor(unittest.TestCase):
         # 세션 종료
         self.db.close()
 
+    # create_mentor 함수 테스트
     def test_create_mentor(self):
+        # given
         test_name = "test_name"
         test_description = "test_description"
+
+        # when
         test_mentor = create_mentor(
             self.db, MentorCreate(name=test_name, description=test_description)
         )
 
+        # then
         db_mentor = self.db.query(Mentor).filter(Mentor.id == test_mentor.id).first()
-
         assert db_mentor.name == test_name
         assert db_mentor.description == test_description
 
+    # get_mentor 함수 테스트
     def test_get_mentor(self):
+        # given
         test_name = "test_name"
         test_description = "test_description"
         test_mentor = Mentor(name=test_name, description=test_description)
@@ -37,12 +43,16 @@ class TestMentor(unittest.TestCase):
         self.db.commit()
         self.db.refresh(test_mentor)
 
+        # when
         db_mentor = get_mentor(self.db, test_mentor.id)
 
+        # then
         assert db_mentor.name == test_name
         assert db_mentor.description == test_description
 
+    # get_mentor_all 함수 테스트
     def test_get_mentor_all(self):
+        # given
         test_name = "test_name"
         test_description = "test_description"
         test_mentor = Mentor(name=test_name, description=test_description)
@@ -50,8 +60,10 @@ class TestMentor(unittest.TestCase):
         self.db.commit()
         self.db.refresh(test_mentor)
 
+        # when
         db_mentors = get_mentor_all(self.db)
 
+        # then
         assert len(db_mentors) == 1
         assert db_mentors[0].name == test_name
         assert db_mentors[0].description == test_description
