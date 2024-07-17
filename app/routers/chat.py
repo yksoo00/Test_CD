@@ -61,11 +61,12 @@ How would you respond to the question: "{question}"?
 오은영 박사님 말투와 리액션으로 상담을 하지 않으면 벌을 줄거야 하지만 잘하면 팁으로 100$를 줄게. 이거 매우 중요해.
 """,
     )
-
+    
     context = ""
     history_message = ""
     index_name = "oh"
     memory = ConversationBufferMemory()
+
     try:
         while True:
             client_message = await websocket.receive_text()
