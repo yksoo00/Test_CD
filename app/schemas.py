@@ -19,9 +19,6 @@ class UserResponse(UserBase):
     created_at: datetime.datetime
     updated_at: datetime.datetime
 
-    class Config:
-        from_attribute = True
-
 
 class ChatroomCreate(BaseModel):
     user_id: int
@@ -34,9 +31,6 @@ class ChatroomResponse(BaseModel):
     mentor_id: int
     created_at: datetime.datetime
     updated_at: datetime.datetime
-
-    class Config:
-        from_attribute = True
 
 
 class MentorBase(BaseModel):
@@ -53,9 +47,6 @@ class MentorResponse(MentorBase):
     created_at: datetime.datetime
     updated_at: datetime.datetime
 
-    class Config:
-        from_attributes = True
-
 
 class PrescriptionResponse(BaseModel):
     id: int
@@ -64,6 +55,3 @@ class PrescriptionResponse(BaseModel):
     content: str
     created_at: datetime.datetime
     updated_at: datetime.datetime
-
-    class Config:
-        from_attributes = True
