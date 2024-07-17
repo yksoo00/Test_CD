@@ -19,11 +19,6 @@ router = APIRouter()
 GPT_MODEL = "gpt-3.5-turbo"
 
 
-def load_history_to_memory(chat_history, memory):
-    if chat_history:
-        memory.chat_memory.messages.extend(chat_history)
-
-
 def generate_gpt_payload(chat_memory_messages, prompt):
     gpt_payload = [
         {"role": msg["role"], "content": msg["content"]} for msg in chat_memory_messages
@@ -66,7 +61,6 @@ async def websocket_endpoint(
     client = OpenAI(
         api_key=os.environ["OPENAI_API_KEY"],
     )
-    chat_history = []
     try:
         while True:
             client_message = await websocket.receive_text()
@@ -74,10 +68,6 @@ async def websocket_endpoint(
             ChatService.create_chat(
                 db, chatroom_id=chatroom_id, is_user=True, content=client_message
             )
-
-            memory.chat_memory.messages = []
-
-            load_history_to_memory(chat_history, memory)
 
             prompt = opensearchService.combined_contexts(
                 client_message, chatroom.mentor_id
