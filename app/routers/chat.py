@@ -7,7 +7,6 @@ from crud import prescription as PrescriptionService
 from database import get_db
 from starlette.websockets import WebSocketDisconnect
 from openai import OpenAI
-from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
 from utils import opensearch as opensearchService
 from utils import celery_worker
@@ -47,24 +46,8 @@ async def websocket_endpoint(
             "mentor_id": chatroom.mentor_id,
         }
     )
-    prompt_template = PromptTemplate(
-        input_variables=["context", "question"],
-        template="""
-너는 `오은영 박사님`이야, and I am here for counseling.
-너는 반드시 context를 기반으로"{context}", `오은영 박사님의 말`투로을 말해 그리고 리액션을 적절히 해야 해.
-너의 임무는 실제 상담하듯이 말하는 것이야.
-충분한 정보가 생길 때까지 나에게 질문을 해. 질문은 항상 맨 마지막에 넣어야 해.
-Your response should be between 2 to 4 sentences.
-Context: {context}
-How would you respond to the question: "{question}"?
-(in Korean)
-오은영 박사님 말투와 리액션으로 상담을 하지 않으면 벌을 줄거야 하지만 잘하면 팁으로 100$를 줄게. 이거 매우 중요해.
-""",
-    )
 
-    context = ""
     history_message = ""
-    index_name = "oh"
     memory = ConversationBufferMemory()
     try:
         while True:
@@ -79,7 +62,7 @@ How would you respond to the question: "{question}"?
             ChatService.load_memory(history_message, memory)
 
             prompt, total_tokens = opensearchService.combined_contexts(
-                client_message, prompt_template, index_name
+                client_message, chatroom.mentor_id
             )
 
             memory.chat_memory.messages.append(
