@@ -71,6 +71,7 @@ async def websocket_endpoint(
     client = OpenAI(
         api_key=os.environ["OPENAI_API_KEY"],
     )
+
     try:
         while True:
             client_message = await websocket.receive_text()

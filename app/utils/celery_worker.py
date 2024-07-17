@@ -95,3 +95,4 @@ def generate_audio_from_string(string, random_factor=0.1):
     # Base64로 인코딩
     audio_base64 = base64.b64encode(buffer.read()).decode("utf-8")
     return audio_base64
+
