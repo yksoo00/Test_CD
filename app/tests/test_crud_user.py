@@ -2,7 +2,6 @@ import unittest
 import unittest._log
 from test_base import SessionLocal, clear_db
 from crud.user import *
-from sqlalchemy import MetaData
 
 
 class TestUser(unittest.TestCase):
@@ -19,41 +18,56 @@ class TestUser(unittest.TestCase):
         # 세션 종료
         self.db.close()
 
+    # create_user 함수 테스트
     def test_create_user(self):
+        # given
         test_nickname = "test"
         test_user = create_user(self.db, UserCreate(nickname=test_nickname))
 
+        # when
         db_user = self.db.query(User).filter(User.id == test_user.id).first()
 
+        # then
         assert db_user.nickname == test_nickname
 
+    # get_user 함수 테스트
     def test_get_user(self):
+        # given
         test_nickname = "test"
         test_user = User(nickname=test_nickname)
         self.db.add(test_user)
         self.db.commit()
         self.db.refresh(test_user)
 
+        # when
         db_user = get_user(self.db, test_user.id)
+
+        # then
         assert db_user.nickname == test_nickname
 
+    # modify_user 함수 테스트
     def test_modify_user(self):
+        # given
         test_nickname = "test"
         test_user = User(nickname=test_nickname)
         self.db.add(test_user)
         self.db.commit()
         self.db.refresh(test_user)
 
+        # when
         new_nickname = "new_test"
         modify_user(self.db, test_user.id, UserModify(nickname=new_nickname))
 
+        # then
         db_user = self.db.query(User).filter(User.id == test_user.id).first()
-
         assert db_user.nickname == new_nickname
 
+    # modify_user 함수 테스트 (유저가 없을 때)
     def test_modify_user_not_found(self):
-
+        # given
+        # when
         new_nickname = "new_test"
         db_user = modify_user(self.db, 1, UserModify(nickname=new_nickname))
 
+        # then
         assert db_user is None
