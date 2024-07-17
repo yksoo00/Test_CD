@@ -47,7 +47,7 @@ def search_index_names(mentor_id):
     return mentor[1]
 
 
-def search_documents_en(query, INDEX_NAME):
+def search_documents_en(query, INDEX_NAME, top_n=5, min_score=1.0):
     search_body = {
         "query": {
             "match": {
@@ -57,15 +57,19 @@ def search_documents_en(query, INDEX_NAME):
                     "minimum_should_match": 1,
                 }
             }
-        }
+        },
+        "sort": [{"_score": {"order": "desc"}}],
+        "size": top_n,
+        "min_score": min_score,
     }
     # search_all_body = {"query": {"match_all": {}}}
     response = opensearch.search(index=INDEX_NAME, body=search_body)
     hits = response["hits"]["hits"]
+    print(hits)
     return [hit["_source"]["text"] for hit in hits]
 
 
-def search_documents_ko(query, INDEX_NAME):
+def search_documents_ko(query, INDEX_NAME, top_n=5, min_score=1.0):
     search_body = {
         "query": {
             "match": {
@@ -74,7 +78,10 @@ def search_documents_ko(query, INDEX_NAME):
                     "minimum_should_match": 1,
                 },
             }
-        }
+        },
+        "sort": [{"_score": {"order": "desc"}}],
+        "size": top_n,
+        "min_score": min_score,
     }
     # search_all_body = {"query": {"match_all": {}}}
     response = opensearch.search(index=INDEX_NAME, body=search_body)
