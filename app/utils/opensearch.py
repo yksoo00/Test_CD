@@ -120,7 +120,7 @@ def combined_contexts(question, mentor_id):
     full_prompt = prompt_template.format(
         context=context, question=question, index_name=INDEX_NAME
     )
-    # 전체 프롬프트 텍스트의 토큰 수 계산
-    total_tokens = count_tokens(full_prompt)
+    # 전체 프롬프트 텍스트의 토큰 수 출력
+    print(count_tokens(full_prompt))
 
-    return full_prompt, total_tokens
+    return full_prompt
