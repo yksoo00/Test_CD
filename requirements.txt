@@ -6,3 +6,11 @@ pymysql
 cryptography
 pytz
 celery
+openai 
+langchain
+pydub
+gtts
+deep-translator
+opensearch-py
+tiktoken
+
