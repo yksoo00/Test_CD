@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, WebSocket
 from sqlalchemy.orm import Session
+from starlette.websockets import WebSocketDisconnect
+from openai import OpenAI
+from langchain.memory import ConversationBufferMemory
 from crud import user as UserService
 from crud import chat as ChatService
 from crud import chatroom as ChatroomService
 from crud import prescription as PrescriptionService
 from database import get_db
-from starlette.websockets import WebSocketDisconnect
-from openai import OpenAI
-from langchain.memory import ConversationBufferMemory
 from utils import opensearch as opensearchService
 from utils import celery_worker
 import os
@@ -62,12 +62,12 @@ async def websocket_endpoint(
         }
     )
 
-    chat_history = ""
     memory = ConversationBufferMemory()
+    client = OpenAI(
+        api_key=os.environ["OPENAI_API_KEY"],
+    )
+    chat_history = []
     try:
-        client = OpenAI(
-            api_key=os.environ["OPENAI_API_KEY"],
-        )
         while True:
             client_message = await websocket.receive_text()
 
@@ -83,7 +83,7 @@ async def websocket_endpoint(
                 client_message, chatroom.mentor_id
             )
 
-            gpt_payload = generate_gpt_payload(memory.chat_memory_message, prompt)
+            gpt_payload = generate_gpt_payload(memory.chat_memory.messages, prompt)
 
             print(gpt_payload)
 
@@ -98,8 +98,6 @@ async def websocket_endpoint(
             memory.chat_memory.messages.append(
                 {"role": "assistant", "content": gpt_answer}
             )
-
-            chat_history = memory.buffer_as_messages
 
             # 음성을 생성하는 celery task 실행
             task_audio = celery_worker.generate_audio_from_string.delay(
@@ -130,4 +128,4 @@ async def websocket_endpoint(
         )
         ChatroomService.delete_chatroom(db, chatroom_id=chatroom_id)
 
-        print("client left")
+        print("client disconnected")
