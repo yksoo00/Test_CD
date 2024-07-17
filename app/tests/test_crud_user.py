@@ -22,12 +22,12 @@ class TestUser(unittest.TestCase):
     def test_create_user(self):
         # given
         test_nickname = "test"
-        test_user = create_user(self.db, UserCreate(nickname=test_nickname))
 
         # when
-        db_user = self.db.query(User).filter(User.id == test_user.id).first()
+        test_user = create_user(self.db, UserCreate(nickname=test_nickname))
 
         # then
+        db_user = self.db.query(User).filter(User.id == test_user.id).first()
         assert db_user.nickname == test_nickname
 
     # get_user 함수 테스트
@@ -60,7 +60,7 @@ class TestUser(unittest.TestCase):
 
         # then
         db_user = self.db.query(User).filter(User.id == test_user.id).first()
-        assert db_user.nickname == new_nickname
+        assert db_user.nickname == "new_test"
 
     # modify_user 함수 테스트 (유저가 없을 때)
     def test_modify_user_not_found(self):
