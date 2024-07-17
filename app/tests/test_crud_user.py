@@ -1,6 +1,8 @@
 import unittest
-from test_base import SessionLocal
+import unittest._log
+from test_base import SessionLocal, clear_db
 from crud.user import *
+from sqlalchemy import MetaData
 
 
 class TestUser(unittest.TestCase):
@@ -12,6 +14,8 @@ class TestUser(unittest.TestCase):
 
     # 테스트 종료 후에 실행
     def tearDown(self):
+        # DB 초기화
+        clear_db()
         # 세션 종료
         self.db.close()
 
