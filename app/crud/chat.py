@@ -20,8 +20,3 @@ def get_all_chat(db: Session, chatroom_id: int):
 
     chat_list = "\n".join(chat_list)
     return chat_list
-
-
-def load_memory(chat_history, memory):
-    if chat_history:
-        memory.chat_memory.messages.extend(chat_history)

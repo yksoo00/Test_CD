@@ -18,7 +18,6 @@ You must speak in the tone of “Dr. Oh Eun-young” based on the context “{co
 Your mission is to listen to the user, empathize, and provide counseling.
 Keep asking me questions until you have enough information. Questions should always be at the very end.
 Your response should be 2 sentences in Korean.
-Context: {context}
 How would you respond to the question: “{question}”?
 If you do not counsel in Dr. Oh Eun-young’s tone and with appropriate reactions, you will be punished, but if you do well, you will receive a $100 tip. This is very important.
 """,
@@ -120,7 +119,7 @@ def combined_contexts(question, mentor_id):
     full_prompt = prompt_template.format(
         context=context, question=question, index_name=INDEX_NAME
     )
-    # 전체 프롬프트 텍스트의 토큰 수 계산
-    total_tokens = count_tokens(full_prompt)
+    # 전체 프롬프트 텍스트의 토큰 수 출력
+    print(count_tokens(full_prompt))
 
-    return full_prompt, total_tokens
+    return full_prompt
