@@ -1,5 +1,5 @@
 import unittest
-from test_base import SessionLocal, clear_db
+from database import SessionLocal, clear_db
 from crud.mentor import *
 
 
