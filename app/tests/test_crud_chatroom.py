@@ -1,5 +1,4 @@
 import unittest
-import unittest._log
 from test_base import SessionLocal, clear_db
 from crud.chatroom import *
 
