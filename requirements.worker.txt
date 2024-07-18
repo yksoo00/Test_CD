@@ -2,4 +2,5 @@ celery
 openai
 langchain
 pydub
-gtts
+edge_tts
+librosa
