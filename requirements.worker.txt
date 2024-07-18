@@ -1,6 +1,4 @@
 celery
-openai
-langchain
 pydub
 edge_tts
 librosa
