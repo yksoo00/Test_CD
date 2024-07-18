@@ -19,9 +19,6 @@ router = APIRouter()
 voice_model_list = ("ko-KR-InJoonNeural", "ko-KR-SunHiNeural", "ko-KR-HyunsuNeural")
 
 
-GPT_MODEL = "gpt-3.5-turbo"
-
-
 def generate_gpt_payload(chat_memory_messages, prompt):
     # 기존 대화 기록 추가
     gpt_payload = [
