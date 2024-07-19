@@ -8,7 +8,9 @@ from models import *
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(
+    root_path="/api",
+)
 
 origins = [
     "http://localhost:5173",
@@ -24,9 +26,9 @@ app.add_middleware(
 )
 
 # 요청받은 엔드포인트로 라우터 연결
-app.include_router(user.router, prefix="/api/users")
-app.include_router(chat.router, prefix="/api/ws")
-app.include_router(mentor.router, prefix="/api/mentors")
-app.include_router(chatroom.router, prefix="/api/chatrooms")
-app.include_router(prescription.router, prefix="/api/prescriptions")
-app.include_router(root.router, prefix="/api")
+app.include_router(user.router, prefix="/users")
+app.include_router(chat.router, prefix="/ws")
+app.include_router(mentor.router, prefix="/mentors")
+app.include_router(chatroom.router, prefix="/chatrooms")
+app.include_router(prescription.router, prefix="/prescriptions")
+app.include_router(root.router, prefix="")
