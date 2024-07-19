@@ -16,8 +16,6 @@ import json
 
 router = APIRouter()
 
-voice_model_list = ("ko-KR-InJoonNeural", "ko-KR-SunHiNeural", "ko-KR-HyunsuNeural")
-
 
 def generate_gpt_payload(chat_memory_messages, prompt):
     # 기존 대화 기록 추가
@@ -29,9 +27,9 @@ def generate_gpt_payload(chat_memory_messages, prompt):
     return gpt_payload
 
 
-# 문자열을 한글, 영어, 숫자, 공백만 남기고 제거
+# 문자열을 한글, 영어, 숫자, 공백, 마침표, 쉼표, 물음표만 남기고 제거
 def trim_text(text):
-    return re.sub(r"[^\uAC00-\uD7A3a-zA-Z0-9 ]", "", text)
+    return re.sub(r"[^\uAC00-\uD7A3a-zA-Z0-9 .,?]", "", text)
 
 
 @router.websocket("/chatrooms/{chatroom_id}")
@@ -99,7 +97,7 @@ async def websocket_endpoint(
 
             # 음성을 생성하는 celery task 실행
             server_audio = celery_worker.generate_audio_from_string.delay(
-                trim_text(gpt_answer), voice_model_list[chatroom.mentor_id - 1]
+                trim_text(gpt_answer)
             ).get()
 
             # GPT의 답변과 음성을 클라이언트에게 전송
