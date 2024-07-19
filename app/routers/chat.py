@@ -27,9 +27,9 @@ def generate_gpt_payload(chat_memory_messages, prompt):
     return gpt_payload
 
 
-# 문자열을 한글, 영어, 숫자, 공백만 남기고 제거
+# 문자열을 한글, 영어, 숫자, 공백, 마침표, 쉼표, 물음표만 남기고 제거
 def trim_text(text):
-    return re.sub(r"[^\uAC00-\uD7A3a-zA-Z0-9 ]", "", text)
+    return re.sub(r"[^\uAC00-\uD7A3a-zA-Z0-9 .,?]", "", text)
 
 
 @router.websocket("/chatrooms/{chatroom_id}")
