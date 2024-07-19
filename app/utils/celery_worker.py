@@ -1,13 +1,8 @@
 import os
-import edge_tts
-import librosa
-import soundfile as sf
-import subprocess
-import asyncio
-from scipy.io import wavfile
-from scipy.signal import resample
 from celery import Celery
 from pydub import AudioSegment
+from gtts import gTTS
+import random
 import io
 import base64
 
@@ -17,76 +12,45 @@ app = Celery("worker", broker=broker_url, backend="rpc://")
 
 
 @app.task
-def generate_audio_from_string(string, voice_id):
-    # edge-tts를 사용하여 텍스트를 음성으로 변환
-    async def text_to_speech(text, output_file):
-        tts = edge_tts.Communicate(text, voice=voice_id)
-        await tts.save(output_file)
+def generate_audio_from_string(string, random_factor=0.1):
+    result_sound = None
+    os.makedirs("samples", exist_ok=True)
 
-    asyncio.run(text_to_speech(string, "input.mp3"))
+    for idx, letter in enumerate(string):
+        print(f"Processing letter at index {idx}: '{letter}'")  # 문자 정보 출력
+        if letter == " ":
+            # 공백 문자 처리 시 기본 값을 사용하여 letter_sound를 정의합니다.
+            letter_sound = AudioSegment.silent(duration=60)  # 60ms의 무음 생성
+            new_sound = letter_sound
+        elif letter == "." or letter == "?":
+            letter_sound = AudioSegment.silent(duration=200)  # 200ms의 무음 생성
+            new_sound = letter_sound
+        elif letter == ",":
+            letter_sound = AudioSegment.silent(duration=100)  # 100ms의 무음 생성
+            new_sound = letter_sound
+        else:
+            sample_path = f"samples/{letter}.mp3"
+            if not os.path.isfile(sample_path):
+                tts = gTTS(letter, lang="ko")
+                tts.save(sample_path)
 
-    # mp3를 wav로 변환 (librosa를 사용하여 처리하기 위해)
-    if os.path.exists("input.mp3"):
-        y, sr = librosa.load("input.mp3", sr=None)
-        buffer = io.BytesIO()
-        sf.write(buffer, y, sr, format="WAV")
-        buffer.seek(0)
+            letter_sound = AudioSegment.from_mp3(sample_path)
+            raw = letter_sound.raw_data[5000:-5000]
 
-        # 높낮이 조정 (주파수 변경 없이)
-        y_shifted = librosa.effects.pitch_shift(y, sr=sr, n_steps=2)
+            octaves = 2.0 + random.random() * random_factor
+            frame_rate = int(letter_sound.frame_rate * (2.0**octaves))
+            # print('%s - octaves: %.2f, fr: %d' % (letter, octaves, frame_rate))
 
-        # 변환된 오디오 저장
-        shifted_buffer = io.BytesIO()
-        sf.write(shifted_buffer, y_shifted, sr, format="WAV")
-        shifted_buffer.seek(0)
+            new_sound = letter_sound._spawn(raw, overrides={"frame_rate": frame_rate})
+            new_sound = new_sound.set_frame_rate(44100)
 
-        # 주파수 조정
-        samplerate, data = wavfile.read(shifted_buffer)
-        new_samplerate = 32000
-        number_of_samples = round(len(data) * float(new_samplerate) / samplerate)
-        data_resampled = resample(data, number_of_samples)
-        resampled_buffer = io.BytesIO()
-        wavfile.write(
-            resampled_buffer, new_samplerate, data_resampled.astype(data.dtype)
-        )
-        resampled_buffer.seek(0)
+        result_sound = new_sound if result_sound is None else result_sound + new_sound
 
-        # SoX를 사용하여 속도 변경 및 로봇 효과 적용
-        final_buffer = io.BytesIO()
-        with open("temp_resampled.wav", "wb") as f:
-            f.write(resampled_buffer.read())
-        subprocess.call(
-            [
-                "sox",
-                "temp_resampled.wav",
-                "temp_final.wav",
-                "tempo",
-                "3",
-                "pitch",
-                "-100",
-            ]
-        )
-        with open("temp_final.wav", "rb") as f:
-            final_buffer.write(f.read())
-        final_buffer.seek(0)
+    # 메모리 버퍼에 오디오 데이터 저장
+    buffer = io.BytesIO()
+    result_sound.export(buffer, format="mp3")
+    buffer.seek(0)
 
-        # Pydub를 사용하여 mp3로 변환 및 메모리 버퍼에 저장
-        audio = AudioSegment.from_wav(final_buffer)
-        mp3_buffer = io.BytesIO()
-        audio.export(mp3_buffer, format="mp3")
-        mp3_buffer.seek(0)
-
-        # Base64로 인코딩
-        audio_base64 = base64.b64encode(mp3_buffer.read()).decode("utf-8")
-
-        # 임시 파일 정리
-        os.remove("input.mp3")
-        os.remove("temp_resampled.wav")
-        os.remove("temp_final.wav")
-
-        return audio_base64
-    else:
-        print(
-            "The audio file was not created. Please check the TTS conversion process."
-        )
-        return None
+    # Base64로 인코딩
+    audio_base64 = base64.b64encode(buffer.read()).decode("utf-8")
+    return audio_base64

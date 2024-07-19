@@ -16,8 +16,6 @@ import json
 
 router = APIRouter()
 
-voice_model_list = ("ko-KR-InJoonNeural", "ko-KR-SunHiNeural", "ko-KR-HyunsuNeural")
-
 
 def generate_gpt_payload(client_message, chat_memory_messages, prompt, context):
     # 기존 대화 기록 추가
@@ -32,9 +30,9 @@ def generate_gpt_payload(client_message, chat_memory_messages, prompt, context):
     return gpt_payload
 
 
-# 문자열을 한글, 영어, 숫자, 공백만 남기고 제거
+# 문자열을 한글, 영어, 숫자, 공백, 마침표, 쉼표, 물음표만 남기고 제거
 def trim_text(text):
-    return re.sub(r"[^\uAC00-\uD7A3a-zA-Z0-9 ]", "", text)
+    return re.sub(r"[^\uAC00-\uD7A3a-zA-Z0-9 .,?]", "", text)
 
 
 @router.websocket("/chatrooms/{chatroom_id}")
@@ -103,7 +101,7 @@ async def websocket_endpoint(
 
             # 음성을 생성하는 celery task 실행
             server_audio = celery_worker.generate_audio_from_string.delay(
-                trim_text(gpt_answer), voice_model_list[chatroom.mentor_id - 1]
+                trim_text(gpt_answer)
             ).get()
 
             # GPT의 답변과 음성을 클라이언트에게 전송
@@ -123,26 +121,27 @@ async def websocket_endpoint(
     # 연결이 끊어졌을 때
     except WebSocketDisconnect:
 
-        #         prompt = """Create a brief prescription-style summary in Korean based on the following conversation between a client and a counselor.
-        # The summary should provide a concise solution derived from the conversation.
-        # Limit the length of the summary to no more than a few sentences.
-        # Conversation : """ + json.dumps(
-        #             memory.chat_memory.messages, ensure_ascii=False
-        #         )
+        prompt = """Create a brief letter-style summary that a counselor sends to a client in Korean based on the following conversation.
+The summary should provide a concise solution derived from the conversation.
+Limit the length of the summary to no more than a few sentences.
+Conversation : """ + json.dumps(
+            memory.chat_memory.messages, ensure_ascii=False
+        )
 
-        #         prescription_content = get_gpt_answer(
-        #             [{"role": "assistant", "content": prompt}]
-        #         )
+        prescription_content = get_gpt_answer(
+            [{"role": "assistant", "content": prompt}]
+        )
 
-        #         # 모든 채팅 내용으로 처방전 생성
-        #         PrescriptionService.create_prescription(
-        #             db,
-        #             user_id=user_id,
-        #             mentor_id=chatroom.mentor_id,
-        #             content=prescription_content,
-        #         )
+        # 모든 채팅 내용으로 처방전 생성
+        PrescriptionService.create_prescription(
+            db,
+            user_id=user_id,
+            mentor_id=chatroom.mentor_id,
+            content=prescription_content,
+        )
 
-        #         # 채팅방 삭제
-        #         ChatroomService.delete_chatroom(db, chatroom_id=chatroom_id)
+        # 채팅방 삭제
+        ChatroomService.delete_chatroom(db, chatroom_id=chatroom_id)
+
 
         print("client disconnected")

@@ -1,5 +1,3 @@
 celery
 pydub
-edge_tts
-librosa
-numpy<2.0.0
+gtts
