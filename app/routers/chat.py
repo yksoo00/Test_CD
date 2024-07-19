@@ -17,13 +17,16 @@ import json
 router = APIRouter()
 
 
-def generate_gpt_payload(chat_memory_messages, prompt):
+def generate_gpt_payload(client_message, chat_memory_messages, prompt, context):
     # 기존 대화 기록 추가
     gpt_payload = [
-        {"role": msg["role"], "content": msg["content"]} for msg in chat_memory_messages
+        {"role": "system", "content": prompt},
+        {"role": "user", "content": client_message},
+        {"role": "assistant", "content": context},
+    ] + [
+        {"role": "assistant", "content": msg["content"]} for msg in chat_memory_messages
     ]
-    # prompt 추가
-    gpt_payload += [{"role": "assistant", "content": prompt}]
+
     return gpt_payload
 
 
@@ -77,16 +80,17 @@ async def websocket_endpoint(
             )
 
             # RAG 모델을 사용하여 prompt 생성
-            prompt = opensearchService.combined_contexts(
+            prompt, context = opensearchService.combined_contexts(
                 client_message, chatroom.mentor_id
             )
 
             # 대화 기록과 prompt를 합쳐서 전달할 payload 생성
-            gpt_payload = generate_gpt_payload(memory.chat_memory.messages, prompt)
+            gpt_payload = generate_gpt_payload(
+                client_message, memory.chat_memory.messages, prompt, context
+            )
 
             # GPT에게 답변 요청
             gpt_answer = get_gpt_answer(gpt_payload)
-
             # 대화 기록에 사용자의 메시지와 GPT의 답변 추가
             memory.chat_memory.messages.append(
                 {"role": "user", "content": client_message}
@@ -138,5 +142,6 @@ Conversation : """ + json.dumps(
 
         # 채팅방 삭제
         ChatroomService.delete_chatroom(db, chatroom_id=chatroom_id)
+
 
         print("client disconnected")
