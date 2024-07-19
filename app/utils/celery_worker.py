@@ -1,13 +1,8 @@
 import os
-import edge_tts
-import librosa
-import soundfile as sf
-import subprocess
-import asyncio
-from scipy.io import wavfile
-from scipy.signal import resample
 from celery import Celery
 from pydub import AudioSegment
+from gtts import gTTS
+import random
 import io
 import base64
 
