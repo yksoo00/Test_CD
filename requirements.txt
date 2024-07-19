@@ -12,7 +12,5 @@ pydub
 deep-translator
 opensearch-py
 tiktoken
-edge_tts
-librosa
+gtts
 pytest
-

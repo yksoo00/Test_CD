@@ -1,6 +1,5 @@
 import unittest
-import unittest._log
-from test_base import SessionLocal, clear_db
+from database import SessionLocal, clear_db
 from crud.user import *
 
 

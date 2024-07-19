@@ -5,6 +5,6 @@ from fastapi.responses import HTMLResponse
 router = APIRouter()
 
 
-@router.get("")
+@router.get("/")
 async def get():
     return HTMLResponse(open("./templates/index.html").read())
