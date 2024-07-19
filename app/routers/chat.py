@@ -119,7 +119,7 @@ async def websocket_endpoint(
     # 연결이 끊어졌을 때
     except WebSocketDisconnect:
 
-        prompt = """Create a brief prescription-style summary in Korean based on the following conversation between a client and a counselor.
+        prompt = """Create a brief letter-style summary that a counselor sends to a client in Korean based on the following conversation.
 The summary should provide a concise solution derived from the conversation.
 Limit the length of the summary to no more than a few sentences.
 Conversation : """ + json.dumps(
