@@ -12,7 +12,7 @@ def get_gpt_answer(gpt_payload):
     gpt_response = client.chat.completions.create(
         model=GPT_MODEL,
         messages=gpt_payload,
-        temperature=0.7,
-        frequency_penalty=0.2,
+        temperature=0.5,
+        frequency_penalty=0.1,
     )
     return gpt_response.choices[0].message.content.strip()
