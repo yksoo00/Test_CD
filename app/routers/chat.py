@@ -21,24 +21,30 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-def generate_gpt_payload(chat_memory_messages, prompt):
-    logger.debug("Gpt Payload being Generated: prompt=%s", prompt)
+
+def generate_gpt_payload(client_message, chat_memory_messages, prompt, context):
     # 기존 대화 기록 추가
     gpt_payload = [
-        {"role": msg["role"], "content": msg["content"]} for msg in chat_memory_messages
+        {"role": "system", "content": prompt},
+        {"role": "user", "content": client_message},
+        {"role": "assistant", "content": context},
+    ] + [
+        {"role": "assistant", "content": msg["content"]} for msg in chat_memory_messages
     ]
     # prompt 추가
     gpt_payload += [{"role": "assistant", "content": prompt}]
     logger.info("Gpt Payload Generated=%s", gpt_payload)
+    
+    logger.debug("Gpt Payload being Generated: prompt=%s", gpt_payload)
+
     return gpt_payload
 
 
-# 문자열을 한글, 영어, 숫자, 공백만 남기고 제거
+# 문자열을 한글, 영어, 숫자, 공백, 마침표, 쉼표, 물음표만 남기고 제거
 def trim_text(text):
     logger.debug("Text being Trimmed: text=%s", text)
-    trimmed_txt = re.sub(r"[^\uAC00-\uD7A3a-zA-Z0-9 ]", "", text)
+    trimmed_text = re.sub(r"[^\uAC00-\uD7A3a-zA-Z0-9 .,?]", "", text)
     logger.info("Text Trimmed: text=%d", trimmed_txt)
-    return trimmed_txt
 
 
 @router.websocket("/chatrooms/{chatroom_id}")
@@ -101,19 +107,23 @@ async def websocket_endpoint(
             )
 
             # RAG 모델을 사용하여 prompt 생성
-            prompt = opensearchService.combined_contexts(
+            prompt, context = opensearchService.combined_contexts(
                 client_message, chatroom.mentor_id
             )
             logger.debug("Prompt Generated for Rag Model: %s", prompt)
 
             # 대화 기록과 prompt를 합쳐서 전달할 payload 생성
-            gpt_payload = generate_gpt_payload(memory.chat_memory.messages, prompt)
+            gpt_payload = generate_gpt_payload(
+                client_message, memory.chat_memory.messages, prompt, context
+
+            )
             logger.info(
                 "Gpt Payload Generated with chatroom_id: chatroom_id=%d", chatroom_id
             )
 
             # GPT에게 답변 요청
             gpt_answer = get_gpt_answer(gpt_payload)
+            
             logger.debug("Gpt Answer Received: answer=%s", gpt_answer)
 
             # 대화 기록에 사용자의 메시지와 GPT의 답변 추가
@@ -161,7 +171,7 @@ async def websocket_endpoint(
             "WebSocket Disconected: user_id=%d, chatroom_id=%d", user_id, chatroom_id
         )
 
-        prompt = """Create a brief prescription-style summary in Korean based on the following conversation between a client and a counselor.
+        prompt = """Create a brief letter-style summary that a counselor sends to a client in Korean based on the following conversation.
 The summary should provide a concise solution derived from the conversation.
 Limit the length of the summary to no more than a few sentences.
 Conversation : """ + json.dumps(
@@ -187,5 +197,6 @@ Conversation : """ + json.dumps(
         # 채팅방 삭제
         ChatroomService.delete_chatroom(db, chatroom_id=chatroom_id)
         logger.info("Chatroom deleted: chatroom_id=%d", chatroom_id)
+
 
         print("client disconnected")

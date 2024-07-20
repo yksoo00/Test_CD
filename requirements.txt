@@ -13,3 +13,4 @@ deep-translator
 opensearch-py
 tiktoken
 gtts
+pytest
