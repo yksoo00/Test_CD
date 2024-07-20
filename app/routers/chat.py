@@ -12,9 +12,16 @@ from utils import celery_worker
 from utils.gpt import get_gpt_answer
 import re
 import json
-
+import tiktoken
 
 router = APIRouter()
+
+
+# 토큰 수 계산 함수
+def count_tokens(text, model_name="cl100k_base"):
+    tokenizer = tiktoken.get_encoding(model_name)
+    tokens = tokenizer.encode(text)
+    return len(tokens)
 
 
 def generate_gpt_payload(client_message, chat_memory_messages, prompt, context):
@@ -26,7 +33,10 @@ def generate_gpt_payload(client_message, chat_memory_messages, prompt, context):
     ] + [
         {"role": "assistant", "content": msg["content"]} for msg in chat_memory_messages
     ]
-
+    combined_content = " ".join([message["content"] for message in gpt_payload])
+    token_count = count_tokens(combined_content)
+    print(gpt_payload)
+    print(token_count)
     return gpt_payload
 
 
@@ -41,7 +51,6 @@ async def websocket_endpoint(
 ):
     await websocket.accept()
     chatroom = ChatroomService.get_chatroom(db, chatroom_id=chatroom_id)
-
     # chatroom이 없을 경우 연결 종료
     if chatroom is None:
         await websocket.send_json(
@@ -93,10 +102,10 @@ async def websocket_endpoint(
             gpt_answer = get_gpt_answer(gpt_payload)
             # 대화 기록에 사용자의 메시지와 GPT의 답변 추가
             memory.chat_memory.messages.append(
-                {"role": "user", "content": client_message}
-            )
-            memory.chat_memory.messages.append(
-                {"role": "assistant", "content": gpt_answer}
+                {
+                    "role": "assistant",
+                    "content": "이전 채팅 내역 : " + client_message + gpt_answer,
+                }
             )
 
             # 음성을 생성하는 celery task 실행
@@ -140,8 +149,7 @@ Conversation : """ + json.dumps(
             content=prescription_content,
         )
 
-        # 채팅방 삭제
-        ChatroomService.delete_chatroom(db, chatroom_id=chatroom_id)
-
+        # # 채팅방 삭제
+        # ChatroomService.delete_chatroom(db, chatroom_id=chatroom_id)
 
         print("client disconnected")
