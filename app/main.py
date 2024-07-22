@@ -1,3 +1,6 @@
+from log_config import setup_logging
+setup_logging()
+
 from fastapi import FastAPI
 from routers import chatroom, mentor, user, chat, root, prescription
 from database import Base, engine
