@@ -14,3 +14,4 @@ opensearch-py
 tiktoken
 gtts
 pytest
+prometheus-fastapi-instrumentator
