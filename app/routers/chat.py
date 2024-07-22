@@ -22,7 +22,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-
 def count_tokens(text, model_name="cl100k_base"):
     tokenizer = tiktoken.get_encoding(model_name)
     tokens = tokenizer.encode(text)
@@ -45,7 +44,7 @@ def generate_gpt_payload(client_message, chat_memory_messages, prompt, context):
 
     # prompt 추가
     logger.info("Gpt Payload Generated=%s", gpt_payload)
-    
+
     logger.debug("Gpt Payload being Generated: prompt=%s", gpt_payload)
 
     return gpt_payload
@@ -55,7 +54,8 @@ def generate_gpt_payload(client_message, chat_memory_messages, prompt, context):
 def trim_text(text):
     logger.debug("Text being Trimmed: text=%s", text)
     trimmed_text = re.sub(r"[^\uAC00-\uD7A3a-zA-Z0-9 .,?]", "", text)
-    logger.info("Text Trimmed: text=%d", trimmed_txt)
+    logger.info("Text Trimmed: text=%s", trimmed_text)
+    return trimmed_text
 
 
 @router.websocket("/chatrooms/{chatroom_id}")
@@ -125,7 +125,6 @@ async def websocket_endpoint(
             # 대화 기록과 prompt를 합쳐서 전달할 payload 생성
             gpt_payload = generate_gpt_payload(
                 client_message, memory.chat_memory.messages, prompt, context
-
             )
             logger.info(
                 "Gpt Payload Generated with chatroom_id: chatroom_id=%d", chatroom_id
@@ -133,7 +132,7 @@ async def websocket_endpoint(
 
             # GPT에게 답변 요청
             gpt_answer = get_gpt_answer(gpt_payload)
-            
+
             logger.debug("Gpt Answer Received: answer=%s", gpt_answer)
 
             # 대화 기록에 사용자의 메시지와 GPT의 답변 추가
@@ -204,10 +203,8 @@ Conversation : """ + json.dumps(
             "Prescription Generated: user_id=%d, chatroom_id=%d", user_id, chatroom_id
         )
 
-
         # 채팅방 삭제
         ChatroomService.delete_chatroom(db, chatroom_id=chatroom_id)
         logger.info("Chatroom deleted: chatroom_id=%d", chatroom_id)
-
 
         print("client disconnected")
