@@ -30,7 +30,7 @@ class TestMentorRouter(unittest.TestCase):
             ),
         ):
             # when
-            result = mentor.create_mentor(None, new_mentor)
+            result = mentor.create_mentor(db=None, mentor=new_mentor)
 
         # then
         assert result.id == test_id

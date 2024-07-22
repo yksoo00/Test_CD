@@ -38,4 +38,4 @@ def create_chatroom(chatroom: ChatroomCreate, db: Session = Depends(get_db)):
         chatroom.user_id,
         chatroom.mentor_id,
     )
-    return
+    return created_chatroom
