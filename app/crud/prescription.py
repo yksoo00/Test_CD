@@ -38,7 +38,7 @@ def get_prescription_all(db: Session, user_id: int):
     logger.debug("All Prescription being Searched: user_id=%d", user_id)
     prescriptions = db.query(Prescription).filter(Prescription.user_id == user_id).all()
     logger.info(
-        "Prescription belongs to user_%d Searched: prescriptions=%d",
+        "Prescription belongs to user_%d Found: %d prescriptions",
         user_id,
         len(prescriptions),
     )
