@@ -12,6 +12,7 @@ from utils import celery_worker
 from utils.gpt import get_gpt_answer
 import re
 import json
+import tiktoken
 import logging
 
 
@@ -20,6 +21,12 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+
+
+def count_tokens(text, model_name="cl100k_base"):
+    tokenizer = tiktoken.get_encoding(model_name)
+    tokens = tokenizer.encode(text)
+    return len(tokens)
 
 
 def generate_gpt_payload(client_message, chat_memory_messages, prompt, context):
@@ -31,8 +38,12 @@ def generate_gpt_payload(client_message, chat_memory_messages, prompt, context):
     ] + [
         {"role": "assistant", "content": msg["content"]} for msg in chat_memory_messages
     ]
+    combined_content = " ".join([message["content"] for message in gpt_payload])
+    token_count = count_tokens(combined_content)
+
+    print(token_count)
+
     # prompt 추가
-    gpt_payload += [{"role": "assistant", "content": prompt}]
     logger.info("Gpt Payload Generated=%s", gpt_payload)
     
     logger.debug("Gpt Payload being Generated: prompt=%s", gpt_payload)
@@ -58,7 +69,6 @@ async def websocket_endpoint(
     )
     await websocket.accept()
     chatroom = ChatroomService.get_chatroom(db, chatroom_id=chatroom_id)
-
     # chatroom이 없을 경우 연결 종료
     if chatroom is None:
         logger.info("Chatroom Not Found: chatroom_id=%d", chatroom_id)
@@ -128,10 +138,10 @@ async def websocket_endpoint(
 
             # 대화 기록에 사용자의 메시지와 GPT의 답변 추가
             memory.chat_memory.messages.append(
-                {"role": "user", "content": client_message}
-            )
-            memory.chat_memory.messages.append(
-                {"role": "assistant", "content": gpt_answer}
+                {
+                    "role": "assistant",
+                    "content": "이전 채팅 내역 : " + client_message + gpt_answer,
+                }
             )
             logger.info(
                 "Saved client_message and gpt_answer: client_message=%s, gpt_answer=%s",
@@ -193,6 +203,7 @@ Conversation : """ + json.dumps(
         logger.info(
             "Prescription Generated: user_id=%d, chatroom_id=%d", user_id, chatroom_id
         )
+
 
         # 채팅방 삭제
         ChatroomService.delete_chatroom(db, chatroom_id=chatroom_id)

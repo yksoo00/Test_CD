@@ -22,7 +22,7 @@ def create_mentor(db: Session, mentor: MentorCreate):
 # DB에서 멘토 불러오는 함수
 def get_mentor(db: Session, mentor_id: int):
     logger.debug("Mentor being Searched: mentor_id=%d", mentor_id)
-    mentor = db.query(Mentor).filter(Mentor.id == mentor.id).first()
+    mentor = db.query(Mentor).filter(Mentor.id == mentor_id).first()
     if mentor is None:
         logger.info("Mentor Not Found: mentor_id=%d", mentor_id)
     else:
