@@ -25,7 +25,8 @@ def create_mentor(mentor: MentorCreate, db: Session = Depends(get_db)):
 def read_mentors(db: Session = Depends(get_db)):
     logger.debug("Mentor being Searched")
     mentors = MentorService.get_mentor_all(db)
-    logger.info("Mentor Searched: mentors=%d", len(mentors))
+    mentors_name = [mentor.name for mentor in mentors]
+    logger.info("Mentor Searched: mentors=%s", str(mentors_name))
     return mentors
 
 

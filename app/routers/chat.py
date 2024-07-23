@@ -43,10 +43,8 @@ def generate_gpt_payload(client_message, chat_memory_messages, prompt, context):
     print(token_count)
 
     # prompt 추가
-    logger.info("Gpt Payload Generated=%s", gpt_payload)
-
     logger.debug("Gpt Payload being Generated: prompt=%s", gpt_payload)
-
+    logger.info("Gpt Payload Generated=%s", gpt_payload)
     return gpt_payload
 
 
@@ -97,7 +95,7 @@ async def websocket_endpoint(
         }
     )
     logger.info(
-        "User Connected Chatroom: user_id=%d, chatroom_id=%d", user_id, chatroom_id
+        "User Connected to Chatroom: user_id=%d, chatroom_id=%d", user_id, chatroom_id
     )
 
     memory = ConversationBufferMemory()
@@ -106,7 +104,7 @@ async def websocket_endpoint(
         while True:
             client_message = await websocket.receive_text()
             logger.debug(
-                "Received Message: user_id=%d, message=%s", user_id, client_message
+                "User Message Received: user_id=%d, message=%s", user_id, client_message
             )
             # 사용자의 메시지를 db에 저장
             ChatService.create_chat(
@@ -193,14 +191,14 @@ Conversation : """ + json.dumps(
         logger.debug("Prescription Generated: content=%s", prescription_content)
 
         # 모든 채팅 내용으로 처방전 생성
-        PrescriptionService.create_prescription(
+        prescription = PrescriptionService.create_prescription(
             db,
             user_id=user_id,
             mentor_id=chatroom.mentor_id,
             content=prescription_content,
         )
         logger.info(
-            "Prescription Generated: user_id=%d, chatroom_id=%d", user_id, chatroom_id
+            "Prescription Generated: user_id=%d, chatroom_id=%d, prescription_id=%d", user_id, chatroom_id, prescription.id
         )
 
         # 채팅방 삭제

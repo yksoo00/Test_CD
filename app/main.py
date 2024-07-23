@@ -1,7 +1,10 @@
+from log_config import setup_logging
+
 from fastapi import FastAPI
 from routers import chatroom, mentor, user, chat, root, prescription
 from database import Base, engine
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 
 # 데이터베이스 테이블 생성을 위해 필요
 from models import *
@@ -32,3 +35,5 @@ app.include_router(mentor.router, prefix="/mentors")
 app.include_router(chatroom.router, prefix="/chatrooms")
 app.include_router(prescription.router, prefix="/prescriptions")
 app.include_router(root.router, prefix="")
+
+Instrumentator().instrument(app).expose(app)
