@@ -35,20 +35,61 @@ services:
     volumes:
       - './db_data:/var/lib/mysql'
 
+  mysql-exporter:
+    image: prom/mysqld-exporter:main
+    container_name: mysql-exporter
+    ports:
+      - "9104:9104"
+    volumes:
+      - ./mysql-exporter/my-config.conf:/cfg/my-config.conf
+    environment:
+      - DATA_SOURCE_NAME='root:teamj@teamj_db:3306/teamj_db'
+      - collect.info_schema.tablestats=true
+      - collect.info_schema.userstats=true
+      - collect.info_schema.query_response_time=true
+      - collect.auto_increment.columns=true
+      - collect.binlog_size=true
+      - collect.perf_schema.eventsstatements=true
+      - collect.perf_schema.eventswaits=true
+      - collect.perf_schema.file_events=true
+      - collect.perf_schema.indexiowaits=true
+      - collect.perf_schema.tableiowaits=true
+      - collect.perf_schema.tablelocks=true
+    depends_on:
+      - teamj_db
+    command:
+      - '--config.my-cnf=/cfg/my-config.conf'
+
   rabbitmq:
     image: rabbitmq:3
-    expose:
-      - "5672"
-      - "15672"
-
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+      - "15692:15692" #metrics 포트
+    command: >
+      sh -c "rabbitmq-plugins enable --offline rabbitmq_management rabbitmq_prometheus &&
+             rabbitmq-server"
   celery_worker:
     build:
       context: .
       dockerfile: Dockerfile.worker
     command: celery -A utils.celery_worker worker --loglevel=info
     working_dir: /app
+    ports:
+      - '5555:5555'
     volumes:
       - ./app/utils:/app/utils
+    environment:
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+    depends_on:
+      - rabbitmq
+
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile.flower
+    ports:
+      - '7777:7777'
     environment:
       - CELERY_BROKER_URL=${CELERY_BROKER_URL}
     depends_on:
@@ -69,10 +110,21 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/alert-rules.yml:/etc/prometheus/alert-rules.yml
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     depends_on:
       - teamj_backend
+
+  alertmanager:
+    image: prom/alertmanager:main
+    container_name: alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - ./alertmanager/tmp:/data/
+    command: --config.file=/etc/alertmanager/alertmanager.yml --log.level=debug
 
   grafana:
     image: grafana/grafana:latest
@@ -84,6 +136,15 @@ services:
       - "3000:3000"
     depends_on:
       - prometheus
+
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    container_name: nginx-exporter
+    ports:
+      - "9113:9113"
+    command: --nginx.scrape-uri=http://nginx:80/stub_status
+    depends_on:
+      - nginx
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.49.1
