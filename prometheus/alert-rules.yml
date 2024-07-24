@@ -3,12 +3,12 @@ groups:
     rules:
       - alert: InstanceDown
         expr: up == 0
-        for: 1m
+        for: 10s  
         labels:
           severity: critical
         annotations:
           summary: "Instance {{ $labels.instance }} is down"
-          description: "인스턴스 {{ $labels.instance }}가 1분 동안 다운되었습니다. Job: {{ $labels.job }}"
+          description: "인스턴스 {{ $labels.instance }}가 10초 동안 다운되었습니다. Job: {{ $labels.job }}"
 
   - name: resource-usage
     rules:

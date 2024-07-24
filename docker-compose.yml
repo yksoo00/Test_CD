@@ -43,20 +43,22 @@ services:
     volumes:
       - ./mysql-exporter/my-config.conf:/cfg/my-config.conf
     environment:
-      - DATA_SOURCE_NAME='root:teamj@teamj_db:3306/teamj_db'
-      - collect.info_schema.tablestats=true
-      - collect.info_schema.userstats=true
-      - collect.info_schema.query_response_time=true
-      - collect.auto_increment.columns=true
-      - collect.binlog_size=true
-      - collect.perf_schema.eventsstatements=true
-      - collect.perf_schema.eventswaits=true
-      - collect.perf_schema.file_events=true
-      - collect.perf_schema.indexiowaits=true
-      - collect.perf_schema.tableiowaits=true
-      - collect.perf_schema.tablelocks=true
+      DATA_SOURCE_NAME: ${DATA_SOURCE_NAME}
+      collect.info_schema.tablestats: 'true'
+      collect.info_schema.userstats: 'true'
+      collect.info_schema.query_response_time: 'true'
+      collect.auto_increment.columns: 'true'
+      collect.binlog_size: 'true'
+      collect.perf_schema.eventsstatements: 'true'
+      collect.perf_schema.eventswaits: 'true'
+      collect.perf_schema.file_events: 'true'
+      collect.perf_schema.indexiowaits: 'true'
+      collect.perf_schema.tableiowaits: 'true'
+      collect.perf_schema.tablelocks: 'true'
     depends_on:
       - teamj_db
+    env_file:
+      - .env
     command:
       - '--config.my-cnf=/cfg/my-config.conf'
 
@@ -121,10 +123,12 @@ services:
     container_name: alertmanager
     ports:
       - "9093:9093"
+    env_file:
+      - .env
     volumes:
-      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - ./alertmanager/:/etc/alertmanager/
       - ./alertmanager/tmp:/data/
-    command: --config.file=/etc/alertmanager/alertmanager.yml --log.level=debug
+    entrypoint: sh -c "env && /etc/alertmanager/entrypoint.sh --config.file=/etc/alertmanager/alertmanager.yml --log.level=debug"
 
   grafana:
     image: grafana/grafana:latest
