@@ -55,3 +55,9 @@ class PrescriptionResponse(BaseModel):
     content: str
     created_at: datetime.datetime
     updated_at: datetime.datetime
+
+
+class PrescriptionCreate(BaseModel):
+    user_id: int
+    mentor_id: int
+    content: str
