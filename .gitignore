@@ -5,5 +5,4 @@ __pycache__
 .vscode
 db_data/
 .env
-grafana/data
 alertmanager/alertmanager.yml
