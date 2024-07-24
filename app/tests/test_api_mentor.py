@@ -10,7 +10,8 @@ class TestMentorApi(unittest.TestCase):
 
 
     def test_read_mentors(self):
-        for _ in range(3):
+        num_of_mentors = 3
+        for _ in range(num_of_mentors):
             test_mentor_name = "test_mentor"
             response = client.post(
                 "/api/mentors",
@@ -20,10 +21,10 @@ class TestMentorApi(unittest.TestCase):
         response = client.get(f"/api/mentors")
         assert response.status_code == 200
         mentors = response.json()
-        assert len(mentors) == 3
+        assert len(mentors) == num_of_mentors
 
     def test_read_mentor_not_found(self):
-        test_mentor_id = 100
+        test_mentor_id = 1
         response = client.get(f"/api/mentors/{test_mentor_id}")
         assert  response.status_code == 404
 

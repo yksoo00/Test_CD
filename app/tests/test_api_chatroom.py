@@ -14,7 +14,7 @@ class TestChatroomApi(unittest.TestCase):
             "/api/users",
             json={"nickname": test_nickname},
         )
-        self.user_id = response.json()["id"]
+        return response.json()["id"]
 
     def test_create_mentor(self):
         test_mentor_name = "test_mentor"
@@ -22,15 +22,15 @@ class TestChatroomApi(unittest.TestCase):
             "/api/mentors",
             json={"name": test_mentor_name, "description": "test mentor description"},
         )
-        self.mentor_id = response.json()["id"]
+        return response.json()["id"]
 
     def test_create_chatroom(self):
-        self.test_create_user()
-        self.test_create_mentor()
+        user_id = self.test_create_user()
+        mentor_id = self.test_create_mentor()
     
         chatroom_data = {
-            "user_id": self.user_id,
-            "mentor_id": self.mentor_id,
+            "user_id": user_id,
+            "mentor_id": mentor_id,
         }
         response = client.post(
             "/api/chatrooms",
@@ -38,15 +38,14 @@ class TestChatroomApi(unittest.TestCase):
         )
         assert response.status_code == 200
         assert "id" in response.json()
-        assert response.json()["user_id"] == self.user_id
-        assert response.json()["mentor_id"] == self.mentor_id
+        assert response.json()["user_id"] == user_id
+        assert response.json()["mentor_id"] == mentor_id
 
     def test_create_chatroom_user_not_found(self):
-        self.test_create_mentor()
-        mentor_id = self.mentor_id
+        mentor_id = self.test_create_mentor()
 
         chatroom_data = {
-            "user_id": 100,
+            "user_id": 1,
             "mentor_id": mentor_id,
         }
 
@@ -57,12 +56,11 @@ class TestChatroomApi(unittest.TestCase):
         assert response.status_code == 404
 
     def test_create_chatroom_mentor_not_found(self):
-        self.test_create_user()
-        user_id = self.user_id
+        user_id = self.test_create_user()
 
         chatroom_data = {
             "user_id": user_id,
-            "mentor_id": 100,
+            "mentor_id": 1,
         }
 
         response = client.post(
