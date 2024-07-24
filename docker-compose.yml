@@ -105,6 +105,7 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf
     depends_on:
       - teamj_backend
+      - grafana
 
   prometheus:
     image: prom/prometheus:latest
@@ -136,7 +137,7 @@ services:
     volumes:
       - ./grafana:/etc/grafana/provisioning
       - ./grafana/data:/var/lib/grafana
-    ports:
+    expose:
       - "3000:3000"
     depends_on:
       - prometheus
