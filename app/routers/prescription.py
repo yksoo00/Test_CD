@@ -11,6 +11,10 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+@router.post("", response_model=PrescriptionResponse, tags=["Prescription"])
+def create_prescription(prescription: PrescriptionCreate, db: Session = Depends(get_db)):
+    return PrescriptionService.create_prescription(db=db,user_id=prescription.user_id, mentor_id=prescription.mentor_id, content=prescription.content)
+
 
 # 처방전 조회
 @router.get(
