@@ -1,0 +1,60 @@
+groups:
+  - name: instance-health
+    rules:
+      - alert: InstanceDown
+        expr: up == 0
+        for: 10s  
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instance {{ $labels.instance }} is down"
+          description: "인스턴스 {{ $labels.instance }}가 10초 동안 다운되었습니다. Job: {{ $labels.job }}"
+
+  - name: resource-usage
+    rules:
+      - alert: HighCpuUsage
+        expr: avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) by (instance) < 0.2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU 사용률이 80% 이상입니다. 현재 사용률: {{ humanizePercentage $value }}"
+
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Memory usage on {{ $labels.instance }}"
+          description: "메모리 사용률이 80% 이상입니다. 사용 가능한 메모리: {{ humanize1024 $value }}"
+
+      - alert: HighDiskUsage
+        expr: (node_filesystem_size_bytes{fstype!="rootfs",fstype!="tmpfs"} - node_filesystem_avail_bytes{fstype!="rootfs",fstype!="tmpfs"}) / node_filesystem_size_bytes{fstype!="rootfs",fstype!="tmpfs"} > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Disk usage on {{ $labels.instance }}"
+          description: "디스크 사용률이 80% 이상입니다. 사용 가능한 디스크 공간: {{ humanize1024 $value }}"
+
+  - name: application-performance
+    rules:
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, instance)) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time for {{ $labels.instance }}"
+          description: "응답 시간이 1초를 초과했습니다. 현재 응답 시간: {{ $value }}초"
+
+      - alert: ErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate for {{ $labels.instance }}"
+          description: "에러율이 5%를 초과했습니다. 현재 에러율: {{ $value }}"
