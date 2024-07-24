@@ -137,6 +137,7 @@ services:
     volumes:
       - ./grafana:/etc/grafana/provisioning
       - ./grafana/data:/var/lib/grafana
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
     expose:
       - "3000:3000"
     depends_on:
