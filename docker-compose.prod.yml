@@ -6,7 +6,6 @@ services:
     expose:
       - '8000:8000'
     depends_on:
-      - teamj_db
       - rabbitmq
       - celery_worker
     volumes:
@@ -23,42 +22,6 @@ services:
       - sh
       - '-c'
       - 'sleep 10 && uvicorn main:app --host 0.0.0.0 --port 8000 --reload'
-
-  teamj_db:
-    image: 'mysql:latest'
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      LANG: C.UTF-8
-    expose:
-      - '3306:3306'
-    volumes:
-      - './db_data:/var/lib/mysql'
-
-  mysql-exporter:
-    image: prom/mysqld-exporter:main
-    container_name: mysql-exporter
-    ports:
-      - "9104:9104"
-    volumes:
-      - ./mysql-exporter/my-config.conf:/cfg/my-config.conf
-    environment:
-      DATA_SOURCE_NAME: ${DATA_SOURCE_NAME}
-      collect.info_schema.tablestats: 'true'
-      collect.info_schema.userstats: 'true'
-      collect.info_schema.query_response_time: 'true'
-      collect.auto_increment.columns: 'true'
-      collect.binlog_size: 'true'
-      collect.perf_schema.eventsstatements: 'true'
-      collect.perf_schema.eventswaits: 'true'
-      collect.perf_schema.file_events: 'true'
-      collect.perf_schema.indexiowaits: 'true'
-      collect.perf_schema.tableiowaits: 'true'
-      collect.perf_schema.tablelocks: 'true'
-    depends_on:
-      - teamj_db
-    command:
-      - '--config.my-cnf=/cfg/my-config.conf'
 
   rabbitmq:
     image: rabbitmq:3
