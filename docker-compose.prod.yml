@@ -137,6 +137,8 @@ services:
     volumes:
       - ./alertmanager/:/etc/alertmanager/
       - ./alertmanager/tmp:/data/
+    environment:
+      API_URL: ${API_URL}
     entrypoint: sh -c "env && /etc/alertmanager/entrypoint.sh --config.file=/etc/alertmanager/alertmanager.yml --log.level=debug"
 
   grafana:
