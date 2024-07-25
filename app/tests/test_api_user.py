@@ -1,6 +1,7 @@
 import pytest
 from database import clear_db
 
+
 @pytest.fixture(scope="function", autouse=True)
 def clear_tests():
     yield

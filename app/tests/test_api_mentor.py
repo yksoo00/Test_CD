@@ -1,6 +1,7 @@
 import pytest
 from database import clear_db
 
+
 @pytest.fixture(scope="function", autouse=True)
 def clear_tests():
     yield
@@ -14,7 +15,9 @@ def test_read_mentors(client):
             "/api/mentors",
             json={"name": test_mentor_name, "description": "test mentor description"},
         )
+
         assert response.status_code == 200
+
 
     response = client.get("/api/mentors")
     assert response.status_code == 200

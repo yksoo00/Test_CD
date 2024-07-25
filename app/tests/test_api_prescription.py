@@ -6,6 +6,7 @@ def clear_tests():
     yield
     clear_db()
 
+
 def test_create_prescription(client, user_id, mentor_id):
     prescription_data = {
         "user_id": user_id,
