@@ -11,9 +11,7 @@ from models import *
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(
-    root_path="/api",
-)
+app = FastAPI()
 
 origins = [
     "http://localhost:5173",
