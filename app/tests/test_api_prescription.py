@@ -14,7 +14,7 @@ def test_create_prescription(client, user_id, mentor_id):
         "content": "Test prescription content",
     }
     response = client.post(
-        "/api/prescriptions",
+        "/prescriptions",
         json=prescription_data,
     )
     assert response.status_code == 200
@@ -27,18 +27,18 @@ def test_read_prescription(client, user_id, mentor_id):
         "content": "Test prescription content",
     }
     response = client.post(
-        "/api/prescriptions",
+        "/prescriptions",
         json=prescription_data,
     )
     prescription_id = response.json()["id"]
 
-    response = client.get(f"/api/prescriptions/{prescription_id}", params={"user_id": user_id})
+    response = client.get(f"/prescriptions/{prescription_id}", params={"user_id": user_id})
     assert response.status_code == 200
     assert response.json()["id"] == prescription_id
 
 def test_read_prescription_not_found(client, user_id):
     test_prescription_id = 1
-    response = client.get(f"/api/prescriptions/{test_prescription_id}", params={"user_id": user_id})
+    response = client.get(f"/prescriptions/{test_prescription_id}", params={"user_id": user_id})
     assert response.status_code == 404
 
 def test_read_prescriptions(client, user_id, mentor_id):
@@ -49,9 +49,9 @@ def test_read_prescriptions(client, user_id, mentor_id):
         "content": "Test prescription content",
     }
     for _ in range(num_of_prescriptions):
-        response = client.post("/api/prescriptions", json=prescription_data)
+        response = client.post("/prescriptions", json=prescription_data)
         assert response.status_code == 200
 
-    response = client.get("/api/prescriptions", params={"user_id": user_id})
+    response = client.get("/prescriptions", params={"user_id": user_id})
     assert response.status_code == 200
     assert len(response.json()) == num_of_prescriptions

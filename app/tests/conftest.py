@@ -23,7 +23,7 @@ def client():
 @pytest.fixture(scope="function")
 def user_id(client):
     response = client.post(
-        "/api/users",
+        "/users",
         json={"nickname": "test_nickname"},
     )
     return response.json()["id"]
@@ -31,7 +31,7 @@ def user_id(client):
 @pytest.fixture(scope="function")
 def mentor_id(client):
     response = client.post(
-        "/api/mentors",
+        "/mentors",
         json={"name": "test_mentor", "description": "test mentor description"},
     )
     return response.json()["id"]

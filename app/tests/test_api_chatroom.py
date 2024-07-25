@@ -12,7 +12,7 @@ def test_create_chatroom(client, user_id, mentor_id):
         "mentor_id": mentor_id,
     }
     response = client.post(
-        "/api/chatrooms",
+        "/chatrooms",
         json=chatroom_data,
     )
     assert response.status_code == 200
@@ -26,7 +26,7 @@ def test_create_chatroom_user_not_found(client, mentor_id):
         "mentor_id": mentor_id,
     }
     response = client.post(
-        "/api/chatrooms",
+        "/chatrooms",
         json=chatroom_data,
     )
     assert response.status_code == 404
@@ -37,7 +37,7 @@ def test_create_chatroom_mentor_not_found(client, user_id):
         "mentor_id": 1,
     }
     response = client.post(
-        "/api/chatrooms",
+        "/chatrooms",
         json=chatroom_data,
     )
     assert response.status_code == 404
