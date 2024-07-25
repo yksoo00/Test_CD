@@ -11,7 +11,7 @@ class TestChatroomApi(unittest.TestCase):
     def test_create_user(self):
         test_nickname = "test_nickname"
         response = client.post(
-            "/api/users",
+            "/users",
             json={"nickname": test_nickname},
         )
         return response.json()["id"]
@@ -19,7 +19,7 @@ class TestChatroomApi(unittest.TestCase):
     def test_create_mentor(self):
         test_mentor_name = "test_mentor"
         response = client.post(
-            "/api/mentors",
+            "/mentors",
             json={"name": test_mentor_name, "description": "test mentor description"},
         )
         return response.json()["id"]
@@ -27,13 +27,13 @@ class TestChatroomApi(unittest.TestCase):
     def test_create_chatroom(self):
         user_id = self.test_create_user()
         mentor_id = self.test_create_mentor()
-    
+
         chatroom_data = {
             "user_id": user_id,
             "mentor_id": mentor_id,
         }
         response = client.post(
-            "/api/chatrooms",
+            "/chatrooms",
             json=chatroom_data,
         )
         assert response.status_code == 200
@@ -50,7 +50,7 @@ class TestChatroomApi(unittest.TestCase):
         }
 
         response = client.post(
-            "/api/chatrooms",
+            "/chatrooms",
             json=chatroom_data,
         )
         assert response.status_code == 404
@@ -64,8 +64,7 @@ class TestChatroomApi(unittest.TestCase):
         }
 
         response = client.post(
-            "/api/chatrooms",
+            "/chatrooms",
             json=chatroom_data,
         )
         assert response.status_code == 404
-    
