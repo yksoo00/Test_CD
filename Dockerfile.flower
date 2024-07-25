@@ -1,0 +1,10 @@
+FROM python:slim
+
+# Celery 및 Flower 설치
+RUN pip install --no-cache-dir celery flower
+
+# 환경 변수 설정
+ENV CELERY_BROKER_URL=${CELERY_BROKER_URL}
+
+# Flower 실행
+CMD ["celery", "flower", "--broker=${CELERY_BROKER_URL}", "--port=7777"]

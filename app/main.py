@@ -11,14 +11,13 @@ from models import *
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(
-    root_path="/api",
-)
+app = FastAPI()
 
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "https://dw8s2b3nbzq04.cloudfront.net",
+    "https://forest-of-thoughts.site",
 ]
 
 app.add_middleware(

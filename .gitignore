@@ -5,4 +5,7 @@ __pycache__
 .vscode
 db_data/
 .env
-grafana/data
+.env.prod
+grafana/
+alertmanager/alertmanager.yml
+certbot/

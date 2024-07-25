@@ -1,8 +1,31 @@
 global:
-  scrape_interval: 15s 
-  evaluation_interval: 15s 
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+rule_files:
+  - /etc/prometheus/alert-rules.yml
 
 scrape_configs:
-  - job_name: 'prometheus-data' 
+  - job_name: 'fastapi-data' 
     static_configs: 
-      - targets: ['teamj_backend:8000'] 
+      - targets: ['teamj_backend:8000']
+  - job_name: 'cAdvisor-data' 
+    static_configs:  
+      - targets: ['cadvisor:8080']
+  - job_name: 'mysql-data' 
+    static_configs: 
+      - targets: ['mysql-exporter:9104']
+  - job_name: 'rabbitmq-data' 
+    static_configs: 
+      - targets: ['rabbitmq:15692']
+  - job_name: 'nginx-data'
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+  - job_name: 'flower'
+    static_configs:
+      - targets: ['flower:7777']
