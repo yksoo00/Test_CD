@@ -11,7 +11,7 @@ class TestPrescriptionApi(unittest.TestCase):
     def test_create_user(self):
         test_nickname = "test_nickname"
         response = client.post(
-            "/api/users",
+            "/users",
             json={"nickname": test_nickname},
         )
         return response.json()["id"]
@@ -19,7 +19,7 @@ class TestPrescriptionApi(unittest.TestCase):
     def test_create_mentor(self):
         test_mentor_name = "test_mentor"
         response = client.post(
-            "/api/mentors",
+            "/mentors",
             json={"name": test_mentor_name, "description": "test mentor description"},
         )
         return response.json()["id"]
@@ -27,14 +27,14 @@ class TestPrescriptionApi(unittest.TestCase):
     def test_create_prescription(self):
         user_id = self.test_create_user()
         mentor_id = self.test_create_mentor()
-    
+
         prescription_data = {
             "user_id": user_id,
             "mentor_id": mentor_id,
             "content": "Test prescription content",
         }
         response = client.post(
-            "/api/prescriptions",
+            "/prescriptions",
             json=prescription_data,
         )
         assert response.status_code == 200
@@ -45,17 +45,19 @@ class TestPrescriptionApi(unittest.TestCase):
         mentor_id = self.test_create_mentor()
 
         prescription_data = {
-        "user_id": user_id,
-        "mentor_id": mentor_id,
-        "content": "Test prescription content",
+            "user_id": user_id,
+            "mentor_id": mentor_id,
+            "content": "Test prescription content",
         }
         response = client.post(
-            "/api/prescriptions",
+            "/prescriptions",
             json=prescription_data,
         )
         prescription_id = response.json()["id"]
-        response = client.get(f"/api/prescriptions/{prescription_id}", params={"user_id": user_id})
-        assert response.status_code  == 200
+        response = client.get(
+            f"/prescriptions/{prescription_id}", params={"user_id": user_id}
+        )
+        assert response.status_code == 200
         assert response.json()["id"] == prescription_id
 
     def test_read_prescription_not_found(self):
@@ -63,7 +65,9 @@ class TestPrescriptionApi(unittest.TestCase):
 
         test_prescription_id = 1
 
-        response = client.get(f"/api/prescriptions/{test_prescription_id}", params={"user_id": user_id})
+        response = client.get(
+            f"/prescriptions/{test_prescription_id}", params={"user_id": user_id}
+        )
         assert response.status_code == 404
 
     def test_read_prescriptions(self):
@@ -71,17 +75,17 @@ class TestPrescriptionApi(unittest.TestCase):
         mentor_id = self.test_create_mentor()
         num_of_prescriptions = 3
 
-        prescription_data =  {
+        prescription_data = {
             "user_id": user_id,
             "mentor_id": mentor_id,
             "content": "Test prescription content",
         }
 
         for _ in range(num_of_prescriptions):
-            response = client.post("/api/prescriptions", json=prescription_data)
+            response = client.post("/prescriptions", json=prescription_data)
             assert response.status_code == 200
 
-        response = client.get("/api/prescriptions", params={"user_id": user_id})
+        response = client.get("/prescriptions", params={"user_id": user_id})
 
         assert response.status_code == 200
         assert len(response.json()) == num_of_prescriptions
