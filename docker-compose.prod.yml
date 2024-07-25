@@ -1,0 +1,175 @@
+services:
+  teamj_backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    expose:
+      - '8000:8000'
+    depends_on:
+      - teamj_db
+      - rabbitmq
+      - celery_worker
+    volumes:
+      - './app:/app'
+    environment:
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - DATABASE_URL=${DATABASE_URL}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENSEARCH_URL=${OPENSEARCH_URL}
+      - OPENSEARCH_ADMIN=${OPENSEARCH_ADMIN}
+      - OPENSEARCH_PASSWORD=${OPENSEARCH_PASSWORD}
+      - GPT_MODEL=${GPT_MODEL}
+    entrypoint:
+      - sh
+      - '-c'
+      - 'sleep 10 && uvicorn main:app --host 0.0.0.0 --port 8000 --reload'
+
+  teamj_db:
+    image: 'mysql:latest'
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      LANG: C.UTF-8
+    expose:
+      - '3306:3306'
+    volumes:
+      - './db_data:/var/lib/mysql'
+
+  mysql-exporter:
+    image: prom/mysqld-exporter:main
+    container_name: mysql-exporter
+    ports:
+      - "9104:9104"
+    volumes:
+      - ./mysql-exporter/my-config.conf:/cfg/my-config.conf
+    environment:
+      DATA_SOURCE_NAME: ${DATA_SOURCE_NAME}
+      collect.info_schema.tablestats: 'true'
+      collect.info_schema.userstats: 'true'
+      collect.info_schema.query_response_time: 'true'
+      collect.auto_increment.columns: 'true'
+      collect.binlog_size: 'true'
+      collect.perf_schema.eventsstatements: 'true'
+      collect.perf_schema.eventswaits: 'true'
+      collect.perf_schema.file_events: 'true'
+      collect.perf_schema.indexiowaits: 'true'
+      collect.perf_schema.tableiowaits: 'true'
+      collect.perf_schema.tablelocks: 'true'
+    depends_on:
+      - teamj_db
+    command:
+      - '--config.my-cnf=/cfg/my-config.conf'
+
+  rabbitmq:
+    image: rabbitmq:3
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+      - "15692:15692" #metrics 포트
+    command: >
+      sh -c "rabbitmq-plugins enable --offline rabbitmq_management rabbitmq_prometheus &&
+             rabbitmq-server"
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    command: celery -A utils.celery_worker worker --loglevel=info
+    working_dir: /app
+    ports:
+      - '5555:5555'
+    volumes:
+      - ./app/utils:/app/utils
+    environment:
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+    depends_on:
+      - rabbitmq
+
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile.flower
+    ports:
+      - '7777:7777'
+    environment:
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+    depends_on:
+      - rabbitmq
+
+  nginx:
+    image: nginx:stable
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    depends_on:
+      - teamj_backend
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    depends_on:
+      - nginx
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do sleep 6h & wait $${!}; done;'"
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/alert-rules.yml:/etc/prometheus/alert-rules.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    depends_on:
+      - teamj_backend
+
+  alertmanager:
+    image: prom/alertmanager:main
+    container_name: alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager/:/etc/alertmanager/
+      - ./alertmanager/tmp:/data/
+    entrypoint: sh -c "env && /etc/alertmanager/entrypoint.sh --config.file=/etc/alertmanager/alertmanager.yml --log.level=debug"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    volumes:
+      - ./grafana:/etc/grafana/provisioning
+      - ./grafana/data:/var/lib/grafana
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+    expose:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    container_name: nginx-exporter
+    ports:
+      - "9113:9113"
+    command: --nginx.scrape-uri=http://nginx:80/stub_status
+    depends_on:
+      - nginx
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: cadvisor-example
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro #읽기 전용 데이터 - 루트 파일 시스템
+      - /var/run:/var/run:rw #읽기 & 쓰기 - 런타임 데이터
+      - /sys:/sys:ro #읽기 전용 데이터 - 커널, 하드웨어, 드라이버 정보 등등
+      - /var/lib/docker/:/var/lib/docker:ro #읽기 전용 데이터 - 도커 정보 데이터
+
+    depends_on:
+      - prometheus
