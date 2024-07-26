@@ -1,17 +1,20 @@
 from log_config import setup_logging
-
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
+from fastapi.security import HTTPBasic
 from routers import chatroom, mentor, user, chat, root, prescription
 from database import Base, engine
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
+from fastapi.openapi.utils import get_openapi
 
 # 데이터베이스 테이블 생성을 위해 필요
 from models import *
 
-Base.metadata.create_all(bind=engine)
+app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
-app = FastAPI()
+security = HTTPBasic()
+
+Base.metadata.create_all(bind=engine)
 
 origins = [
     "http://localhost:5173",
@@ -36,4 +39,11 @@ app.include_router(chatroom.router, prefix="/chatrooms")
 app.include_router(prescription.router, prefix="/prescriptions")
 app.include_router(root.router, prefix="")
 
+
+@app.get("/openapi.json", include_in_schema=False)
+async def openapi(_: str = Depends(root.get_admin)):
+    return get_openapi(title=app.title, version=app.version, routes=app.routes)
+
+
+# Instrumentation 설정
 Instrumentator().instrument(app).expose(app)

@@ -18,6 +18,8 @@ services:
       - OPENSEARCH_ADMIN=${OPENSEARCH_ADMIN}
       - OPENSEARCH_PASSWORD=${OPENSEARCH_PASSWORD}
       - GPT_MODEL=${GPT_MODEL}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
     entrypoint:
       - sh
       - '-c'
