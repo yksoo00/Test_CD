@@ -9,9 +9,32 @@ from database import get_db
 from main import app
 from database import Base, engine
 from models import *
+import pytest
+
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base.metadata.create_all(bind=engine)
+
+@pytest.fixture(scope="module")
+def client():
+    with TestClient(app) as c:
+        yield c
+
+@pytest.fixture(scope="function")
+def user_id(client):
+    response = client.post(
+        "/users",
+        json={"nickname": "test_nickname"},
+    )
+    return response.json()["id"]
+
+@pytest.fixture(scope="function")
+def mentor_id(client):
+    response = client.post(
+        "/mentors",
+        json={"name": "test_mentor", "description": "test mentor description"},
+    )
+    return response.json()["id"]
 
 
 def override_get_db():
@@ -23,4 +46,3 @@ def override_get_db():
 
 
 app.dependency_overrides[get_db] = override_get_db
-client = TestClient(app)

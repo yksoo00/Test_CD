@@ -31,4 +31,6 @@ jobs:
           OPENSEARCH_PASSWORD : ${{ secrets.OPENSEARCH_PASSWORD }}
           GPT_MODEL : ${{ secrets.GPT_MODEL }}
           OPENAI_API_KEY : ${{ secrets.OPENAI_API_KEY }}
+          ADMIN_USERNAME : ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_PASSWORD : ${{ secrets.ADMIN_PASSWORD }}
         run: pytest .
